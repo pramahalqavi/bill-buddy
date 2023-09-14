@@ -7,13 +7,13 @@ class StringRes {
 
   static const String newBill = "New Bill";
   static const String billItems = "Bill Items";
-  static const String billItemsInstruction = "Add bill title, date, amount and price of each item";
+  static const String billItemsInstruction = "Add bill title, date, price & quantity of each item";
   static const String title = "Title";
-  static const String itemName = "Item Name";
+  static const String itemName = "Item name";
   static const String price = "Price";
   static const String qty = "Qty";
   static const String amount = "Amount";
-  static const String addItem = "Add Item";
+  static const String addItem = "Add item";
 
   static const String summary = "Summary";
   static const String subtotal = "Subtotal";
@@ -22,4 +22,5 @@ class StringRes {
   static const String discounts = "Discounts";
   static const String others = "Others";
   static const String totalAmount = "Total amount";
+  static const String next = "Next";
 }

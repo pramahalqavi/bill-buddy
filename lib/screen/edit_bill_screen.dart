@@ -3,6 +3,7 @@ import 'package:billbuddy/base/design_template.dart';
 import 'package:billbuddy/bloc/add_bill_bloc.dart';
 import 'package:billbuddy/model/bill.dart';
 import 'package:billbuddy/model/bill_item.dart';
+import 'package:billbuddy/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +20,7 @@ class EditBillScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<AddBillBloc>(
       create: (context) => AddBillBloc(
-          AddBillState(Bill(billDate: DateTime.now(), items: [BillItem(name: "test")]))
+          AddBillState(Bill(billDate: DateTime.now(), items: []))
       ),
       child: BlocBuilder<AddBillBloc, AddBillState>(
         builder: (context, state) => Scaffold(
@@ -38,7 +39,7 @@ class EditBillScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(left: 16, right: 16),
         child: ListView(
-            padding: EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: 24),
             addAutomaticKeepAlives: false,
             children: constructBill(context, state)));
   }
@@ -48,6 +49,7 @@ class EditBillScreen extends StatelessWidget {
     items.addAll(constructBillHeader(context, state));
     items.addAll(constructBillItems(context, state));
     items.addAll(constructBillSummary(context, state));
+    items.add(constructSubmitButton(context, state));
     return items;
   }
 
@@ -58,6 +60,10 @@ class EditBillScreen extends StatelessWidget {
     items.add(Padding(
         padding: EdgeInsets.only(top: 24),
         child: TextField(
+          onChanged: (value) {
+            context.read<AddBillBloc>().add(UpdateBillHeaderEvent(value));
+          },
+          controller: textEditingControllerWithValue(state.bill.title),
           decoration: inputDecoration(context, padding: 16, label: Text(StringRes.title)),
         )));
     items.add(Padding(
@@ -82,6 +88,9 @@ class EditBillScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 12),
           child: TextField(
+              onChanged: (value) {
+                context.read<AddBillBloc>().add(UpdateBillItemEvent(position: item.position, name: value));
+              },
               controller: textEditingControllerWithValue(item.name),
               decoration: inputDecoration(context, padding: 12, label: Text(StringRes.itemName))
           ),
@@ -91,34 +100,41 @@ class EditBillScreen extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                flex: 6,
+                flex: 75,
                 child: TextFormField(
-                    controller: textEditingControllerWithValue(item.price.toString()),
+                    onChanged: (value) {
+                      context.read<AddBillBloc>().add(UpdateBillItemEvent(position: item.position, price: value));
+                    },
+                    maxLength: 13,
+                    controller: textEditingControllerWithValue(item.price.toString(), shouldFormatNumber: true),
                     keyboardType: TextInputType.number,
                     inputFormatters: numberInputFormatters(),
                     decoration: inputDecoration(context, padding: 12, label: Text(StringRes.price))
                 ),
               ),
-              Expanded(flex: 3, child: SizedBox()),
+              Expanded(flex: 5, child: SizedBox()),
               Expanded(
-                flex: 4,
+                flex: 40,
                 child: TextFormField(
-                    controller: textEditingControllerWithValue(item.quantity.toString()),
+                    onChanged: (value) {
+                      context.read<AddBillBloc>().add(UpdateBillItemEvent(position: item.position, qty: value));
+                    },
+                    maxLength: 3,
+                    textAlign: TextAlign.right,
+                    controller: textEditingControllerWithValue(item.quantity.toString(), shouldFormatNumber: true),
                     keyboardType: TextInputType.number,
                     inputFormatters: numberInputFormatters(),
-                    decoration: inputDecoration(context, padding: 12, label: Text(StringRes.qty), suffix: Text("X"))
+                    decoration: inputDecoration(context, padding: 12, label: Text(StringRes.qty), prefix: Text("X"))
                 ),
               ),
-              Expanded(flex: 1, child: SizedBox()),
+              Expanded(flex: 10, child: SizedBox(
+                  child: Text("=", textAlign: TextAlign.end, style: textTheme(context).titleMedium)
+              )),
               Expanded(
-                flex: 6,
-                child: TextFormField(
-                    controller: textEditingControllerWithValue(item.getTotal().toString()),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: numberInputFormatters(),
-                    decoration: inputDecoration(context, padding: 12, label: Text(StringRes.amount))
-                ),
-              )
+                  flex: 75,
+                  child: Text(formatThousands(item.amount.toString()),
+                      textAlign: TextAlign.end,
+                      style: textTheme(context).titleMedium)),
             ],
           ),
         ),
@@ -145,7 +161,7 @@ class EditBillScreen extends StatelessWidget {
                 icon: Icon(Icons.add_circle_outline),
                 label: Text(StringRes.addItem),
                 onPressed: () {
-
+                  context.read<AddBillBloc>().add(AddBillItemEvent());
                 },
               ),
             )
@@ -161,12 +177,22 @@ class EditBillScreen extends StatelessWidget {
   List<Widget> constructBillSummary(BuildContext context, AddBillState state) {
     List<Widget> items = [];
     items.add(constructBillSummaryHeader(context, state));
-    items.add(constructBillSummaryItem(context, state, StringRes.subtotal, state.bill.getSubtotal().toString(), false));
-    items.add(constructBillSummaryItem(context, state, StringRes.tax, state.bill.tax.toString(), true));
-    items.add(constructBillSummaryItem(context, state, StringRes.serviceCharge, state.bill.service.toString(), true));
-    items.add(constructBillSummaryItem(context, state, StringRes.discounts, state.bill.discounts.toString(), true));
-    items.add(constructBillSummaryItem(context, state, StringRes.others, state.bill.others.toString(), false));
-    items.add(constructBillSummaryItem(context, state, StringRes.totalAmount, state.bill.getTotal().toString(), true));
+    items.add(constructBillSummaryItem(context, state, StringRes.subtotal, state.bill.getSubtotal().toString()));
+    items.add(constructBillSummaryItem(context, state, StringRes.tax, state.bill.tax.toString(), onTextChange: (value) {
+      context.read<AddBillBloc>().add(UpdateBillSummaryEvent(tax: value));
+    }));
+    items.add(constructBillSummaryItem(context, state, StringRes.serviceCharge, state.bill.service.toString(), onTextChange: (value) {
+      context.read<AddBillBloc>().add(UpdateBillSummaryEvent(service: value));
+    }));
+    items.add(constructBillSummaryItem(context, state, StringRes.discounts, state.bill.discounts.toString(), onTextChange: (value) {
+      context.read<AddBillBloc>().add(UpdateBillSummaryEvent(discounts: value));
+    }));
+    items.add(constructBillSummaryItem(context, state, StringRes.others, state.bill.others.toString(), onTextChange: (value) {
+      context.read<AddBillBloc>().add(UpdateBillSummaryEvent(others: value));
+    }));
+    items.add(constructBillSummaryItem(context, state, StringRes.totalAmount, state.bill.total.toString(), onTextChange: (value) {
+      context.read<AddBillBloc>().add(UpdateBillSummaryEvent(total: value));
+    }));
     return items;
   }
 
@@ -186,28 +212,39 @@ class EditBillScreen extends StatelessWidget {
     );
   }
 
-  Widget constructBillSummaryItem(BuildContext context, AddBillState state, String itemName, String itemValue, bool isTextForm) {
+  Widget constructBillSummaryItem(BuildContext context, AddBillState state, String itemName, String itemValue, {void Function(String value)? onTextChange}) {
     Widget rightWidget;
+    bool isTextForm = onTextChange != null;
     if (isTextForm) {
       rightWidget = TextFormField(
+          onChanged: onTextChange,
+          maxLength: 13,
           textAlign: TextAlign.right,
-          controller: textEditingControllerWithValue(itemValue),
+          controller: textEditingControllerWithValue(itemValue, shouldFormatNumber: true),
           keyboardType: TextInputType.number,
           inputFormatters: numberInputFormatters(),
           decoration: inputDecoration(context, padding: 6)
       );
     } else {
-      rightWidget = Text(itemValue, textAlign: TextAlign.right, style: textTheme(context).labelLarge);
+      rightWidget = Text(formatThousands(itemValue), textAlign: TextAlign.right, style: textTheme(context).titleMedium);
     }
+    double rightPadding = isTextForm ? 0 : 8;
     return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 4),
+      padding: EdgeInsets.only(top: 8, bottom: 8, right: rightPadding),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(child: Text(itemName, style: textTheme(context).labelLarge), flex: 1),
+          Expanded(child: Text(itemName, style: textTheme(context).titleSmall), flex: 1),
           Expanded(child: rightWidget, flex: 1)
         ],
       ),
+    );
+  }
+
+  Widget constructSubmitButton(BuildContext context, AddBillState state) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: primaryTextButton(context, onPressed: () {}, text: StringRes.next),
     );
   }
 }
