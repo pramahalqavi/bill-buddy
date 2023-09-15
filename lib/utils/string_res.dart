@@ -14,6 +14,7 @@ class StringRes {
   static const String qty = "Qty";
   static const String amount = "Amount";
   static const String addItem = "Add item";
+  static const String billDate = "Bill date";
 
   static const String summary = "Summary";
   static const String subtotal = "Subtotal";
@@ -23,4 +24,12 @@ class StringRes {
   static const String others = "Others";
   static const String totalAmount = "Total amount";
   static const String next = "Next";
+  static const String bill = "Bill";
+  static const String item = "Item";
+  static const String invalidInput = "Invalid input";
+  static const String othersErrorMsg = "This field should not have negative value";
+  static const String totalErrorMsg = "This field should be greater than zero";
+
+  static const String editParticipant = "Edit Participant";
+  static const String deleteItem = "Delete item";
 }

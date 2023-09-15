@@ -5,17 +5,19 @@ import 'package:flutter/services.dart';
 
 import '../utils/number_input_formatter.dart';
 
-OutlineInputBorder outlineInputBorder(BuildContext context) {
+OutlineInputBorder outlineInputBorder(BuildContext context, bool isError) {
+  var borderColor = isError ? colorScheme(context).error : colorScheme(context).outline;
   return OutlineInputBorder(
-    borderSide: BorderSide(color: colorScheme(context).outline, width: 1),
+    borderSide: BorderSide(color: borderColor, width: 1),
   );
 }
 
-InputDecoration inputDecoration(BuildContext context, {double padding = 0, Widget? label, Widget? prefix}) {
+InputDecoration inputDecoration(BuildContext context, {double padding = 0, Widget? label, Widget? prefix, bool isError = false}) {
   return InputDecoration(
       counterText: "",
       label: label,
-      border: outlineInputBorder(context),
+      enabledBorder: outlineInputBorder(context, isError),
+      border: outlineInputBorder(context, isError),
       contentPadding: EdgeInsets.all(padding),
       prefix: prefix);
 }
@@ -47,9 +49,24 @@ TextButton primaryTextButton(BuildContext context,
 
 ButtonStyle primaryButtonStyle(BuildContext context) {
   return TextButton.styleFrom(
-      padding: EdgeInsets.only(top: 12, bottom: 12),
+      padding: EdgeInsets.only(top: 14, bottom: 14),
       backgroundColor: colorScheme(context).primary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
       ));
+}
+
+TextStyle errorTextStyle(BuildContext context) {
+  return TextStyle(
+    color: colorScheme(context).error
+  );
+}
+
+BoxDecoration curvedBoxDecoration() {
+  return BoxDecoration(
+      border: Border.all(
+        color: Colors.white,
+      ),
+      borderRadius: BorderRadius.all(Radius.circular(16))
+  );
 }

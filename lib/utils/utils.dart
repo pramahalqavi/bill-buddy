@@ -14,3 +14,16 @@ String formatThousands(String str) {
   NumberFormat formatter = NumberFormat.decimalPattern("en_US");
   return formatter.format(stringToInt(str));
 }
+
+String dateToString(DateTime date, {String format = "dd-MM-yyyy"}) {
+  return DateFormat(format).format(date);
+}
+
+DateTime? stringToDate(String? formattedDate, {String format = "dd-MM-yyyy"}) {
+  if (formattedDate == null) return null;
+  try {
+    return DateFormat(format).parse(formattedDate);
+  } catch (error) {
+    return null;
+  }
+}

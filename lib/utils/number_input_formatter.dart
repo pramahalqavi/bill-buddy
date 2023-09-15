@@ -1,6 +1,5 @@
 import 'package:billbuddy/utils/utils.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 class NumberInputFormatter extends TextInputFormatter {
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
