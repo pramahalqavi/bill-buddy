@@ -47,9 +47,9 @@ TextButton primaryTextButton(BuildContext context,
       style: primaryButtonStyle(context));
 }
 
-ButtonStyle primaryButtonStyle(BuildContext context) {
+ButtonStyle primaryButtonStyle(BuildContext context, {double verticalPadding = 12}) {
   return TextButton.styleFrom(
-      padding: EdgeInsets.only(top: 14, bottom: 14),
+      padding: EdgeInsets.only(top: verticalPadding, bottom: verticalPadding),
       backgroundColor: colorScheme(context).primary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),

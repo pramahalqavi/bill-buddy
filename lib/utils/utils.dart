@@ -11,8 +11,12 @@ int stringToInt(String? str) {
 }
 
 String formatThousands(String str) {
-  NumberFormat formatter = NumberFormat.decimalPattern("en_US");
-  return formatter.format(stringToInt(str));
+  try {
+    NumberFormat formatter = NumberFormat.decimalPattern("en_US");
+    return formatter.format(stringToInt(str));
+  } catch (e) {
+    return str;
+  }
 }
 
 String dateToString(DateTime date, {String format = "dd-MM-yyyy"}) {

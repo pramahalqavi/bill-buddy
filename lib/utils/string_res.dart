@@ -32,4 +32,7 @@ class StringRes {
 
   static const String editParticipant = "Edit Participant";
   static const String deleteItem = "Delete item";
+  static const String add = "Add";
+  static const String participant = "Participant";
+  static const String addParticipant = "Add Bill Participant";
 }
