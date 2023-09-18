@@ -35,4 +35,7 @@ class StringRes {
   static const String add = "Add";
   static const String participant = "Participant";
   static const String addParticipant = "Add Bill Participant";
+  static const String maxParticipantError = "Maximum participant limit has been reached";
+
+  static const String assignParticipant = "Assign Participant";
 }

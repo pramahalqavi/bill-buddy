@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../model/participant.dart';
 import '../utils/string_res.dart';
 
 class EditBillScreen extends StatelessWidget {
@@ -21,7 +22,7 @@ class EditBillScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<EditBillBloc>(
       create: (context) => EditBillBloc(
-          EditBillState(Bill(billDate: DateTime.now(), items: []))
+          EditBillState(Bill(billDate: DateTime.now(), items: [], participants: [Participant()]))
       ),
       child: BlocBuilder<EditBillBloc, EditBillState>(
         builder: (context, state) => Scaffold(

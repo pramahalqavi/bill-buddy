@@ -1,4 +1,5 @@
 import 'package:billbuddy/bloc/edit_participant_bloc.dart';
+import 'package:billbuddy/screen/assign_participant_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -65,7 +66,11 @@ class EditParticipantScreen extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.only(top: 8.0),
         child: TextButton.icon(onPressed: () {
-
+          if (state.bill.participants.length == 20) {
+            showMaxParticipantErrorSnackbar(context, state);
+          } else {
+            context.read<EditParticipantBloc>().add(AddParticipantEvent());
+          }
         },
         icon: Icon(Icons.add, color: colorScheme(context).onPrimary,),
         label: Text(StringRes.add, style: textThemePrimary(context).titleSmall),
@@ -81,32 +86,40 @@ class EditParticipantScreen extends StatelessWidget {
 
   List<Widget> renderParticipants(BuildContext context, EditParticipantState state) {
     List<Widget> items = [];
-    var rowChildren = [Expanded(
-      flex: 9,
-      child: TextFormField(
-          onChanged: (value) {
-          },
-          controller: textEditingControllerWithValue(""),
-          decoration: inputDecoration(context, padding: 12, label: Text(StringRes.participant))
-      ),
-    )];
-    rowChildren.add(Expanded(
-      flex: 1,
-      child: IconButton(onPressed: () {
-
-      }, icon: Icon(Icons.highlight_remove)),
-    ));
-    var row = Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Row(children: rowChildren),
-    );
-    items.add(row);
+    for (int i = 0; i < state.bill.participants.length; ++i) {
+      var participant = state.bill.participants[i];
+      var rowChildren = [Expanded(
+        flex: 9,
+        child: TextFormField(
+            onChanged: (value) {
+              context.read<EditParticipantBloc>().add(UpdateParticipantEvent(i, value));
+            },
+            maxLength: 128,
+            textCapitalization: TextCapitalization.sentences,
+            controller: textEditingControllerWithValue(participant.name),
+            decoration: inputDecoration(context, padding: 12, label: Text("${StringRes.participant} ${i + 1}"))
+        ),
+      )];
+      if (i > 0) {
+        rowChildren.add(Expanded(
+          flex: 1,
+          child: IconButton(onPressed: () {
+            context.read<EditParticipantBloc>().add(DeleteParticipantEvent(i));
+          }, icon: Icon(Icons.highlight_remove)),
+        ));
+      }
+      var row = Padding(
+        padding: const EdgeInsets.only(top: 8, bottom: 8),
+        child: Row(children: rowChildren),
+      );
+      items.add(row);
+    }
     return items;
   }
 
   Widget renderProceedButton(BuildContext context, EditParticipantState state) {
     var button = primaryTextButton(context, onPressed: () {
-
+      Navigator.push(context, AssignParticipantScreen.route(state.bill));
     }, text: StringRes.next);
     List<Widget> columnChildren = [button];
     return Padding(
@@ -116,5 +129,12 @@ class EditParticipantScreen extends StatelessWidget {
         children: columnChildren,
       ),
     );
+  }
+
+  void showMaxParticipantErrorSnackbar(BuildContext context, EditParticipantState state) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text(StringRes.maxParticipantError),
+    ));
   }
 }
