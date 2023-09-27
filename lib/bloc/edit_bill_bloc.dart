@@ -15,13 +15,14 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
    on<EditBillProceedErrorEvent>(editBillProceedError);
   }
   void addBillItem(AddBillItemEvent event, Emitter<EditBillState> emitter) {
-    state.bill.items.add(BillItem());
+    state.bill.items.add(BillItem(participantsId: {}));
     emitter(EditBillState(state.bill));
   }
 
   void deleteBillItem(DeleteBillItemEvent event, Emitter<EditBillState> emitter) {
     if (event.itemPosition < 0 || event.itemPosition >= state.bill.items.length) return;
     state.bill.items.removeAt(event.itemPosition);
+    state.bill.updateTotal();
     emitter(EditBillState(state.bill));
   }
 

@@ -38,4 +38,6 @@ class StringRes {
   static const String maxParticipantError = "Maximum participant limit has been reached";
 
   static const String assignParticipant = "Assign Participant";
+  static const String assignParticipantToItems = "Assign participants to items";
+  static const String assignParticipantInstruction = "Tap a participant and choose their items";
 }
