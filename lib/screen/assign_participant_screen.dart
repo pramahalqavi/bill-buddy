@@ -7,6 +7,7 @@ import '../base/app_theme.dart';
 import '../base/design_template.dart';
 import '../bloc/assign_participant_bloc.dart';
 import '../model/bill.dart';
+import '../model/bill_item.dart';
 import '../utils/string_res.dart';
 
 class AssignParticipantScreen extends StatelessWidget {
@@ -35,7 +36,6 @@ class AssignParticipantScreen extends StatelessWidget {
 
   Widget renderContainer(BuildContext context, AssignParticipantState state) {
     return Container(
-      padding: EdgeInsets.only(left: 16, right: 16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.max,
@@ -58,7 +58,7 @@ class AssignParticipantScreen extends StatelessWidget {
     }, text: StringRes.next);
     List<Widget> columnChildren = [button];
     return Padding(
-      padding: EdgeInsets.only(top: 16, bottom: 16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: columnChildren,
@@ -83,11 +83,11 @@ class AssignParticipantScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 8.0, left: 16, right: 16),
             child: Text(StringRes.assignParticipantToItems, style: textTheme(context).headlineSmall,),
           ),
           Container(
-            padding: const EdgeInsets.only(top: 4.0),
+            padding: const EdgeInsets.only(top: 4.0, left: 16, right: 16),
             child:
               Text(StringRes.assignParticipantInstruction, style: textTheme(context).bodyMedium,),
           ),
@@ -101,7 +101,7 @@ class AssignParticipantScreen extends StatelessWidget {
   Widget renderParticipantListView(BuildContext context, AssignParticipantState state) {
     return Container(
       height: 120,
-      margin: EdgeInsets.only(top: 16),
+      margin: EdgeInsets.only(top: 16, left: 16, right: 16),
       child: ListView(
         addAutomaticKeepAlives: false,
         scrollDirection: Axis.horizontal,
@@ -118,7 +118,7 @@ class AssignParticipantScreen extends StatelessWidget {
       var outlineColor = i == state.selectedParticipantIdx ? colorScheme(context).onPrimary : colorScheme(context).outline;
       var txtThemeContainer = i == state.selectedParticipantIdx ? textThemePrimary(context) : textTheme(context);
       list.add(
-          InkWell(
+          GestureDetector(
             onTap: () {
               context.read<AssignParticipantBloc>().add(ParticipantSelectedEvent(i));
             },
@@ -172,47 +172,82 @@ class AssignParticipantScreen extends StatelessWidget {
       },
       child: Container(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                    child: Text(state.bill.items[index].name, style: textTheme(context).bodyLarge,),
-                ),
-                Checkbox(
-                    value: state.bill.items[index].participantsId.contains(state.selectedParticipantIdx),
-                    onChanged: (isChecked) {
-                      context.read<AssignParticipantBloc>().add(BillItemSelectedEvent(index));
-                    }
-                )
-              ],
+            Container(
+              padding: EdgeInsets.only(left: 16, right: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                      child: Text(state.bill.items[index].name, style: textTheme(context).bodyLarge,),
+                  ),
+                  Checkbox(
+                      value: state.bill.items[index].participantsId.contains(state.selectedParticipantIdx),
+                      onChanged: (isChecked) {
+                        context.read<AssignParticipantBloc>().add(BillItemSelectedEvent(index));
+                      }
+                  )
+                ],
+              ),
             ),
-            Row(
-              children: [
-                Expanded(
-                    flex: 4,
-                    child: Text(
-                      formatThousands(state.bill.items[index].price.toString()),
-                      style: textTheme(context).bodyLarge,
-                    )),
-                Expanded(
-                    flex: 1,
-                    child: Text("X${state.bill.items[index].quantity}",
-                        style: textTheme(context).bodyLarge)),
-                Expanded(
-                    flex: 3,
-                    child: Text(
-                      formatThousands(state.bill.items[index].amount.toString()),
-                      style: textTheme(context).bodyLarge,
-                      textAlign: TextAlign.right,
-                    ))
-              ],
+            Container(
+              padding: EdgeInsets.only(left: 16, right: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                      flex: 4,
+                      child: Text(
+                        formatThousands(state.bill.items[index].price.toString()),
+                        style: textTheme(context).bodyLarge,
+                      )),
+                  Expanded(
+                      flex: 1,
+                      child: Text("X${state.bill.items[index].quantity}",
+                          style: textTheme(context).bodyLarge)),
+                  Expanded(
+                      flex: 3,
+                      child: Text(
+                        formatThousands(state.bill.items[index].amount.toString()),
+                        style: textTheme(context).bodyLarge,
+                        textAlign: TextAlign.right,
+                      ))
+                ],
+              ),
+            ),
+            Container(
+              height: 56,
+              padding: EdgeInsets.only(top: 12, left: 16, right: 16),
+              child: ListView(
+                addAutomaticKeepAlives: false,
+                scrollDirection: Axis.horizontal,
+                children: renderItemBillParticipant(context, state, state.bill.items[index]),
+              ),
             ),
             renderDivider(16)
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> renderItemBillParticipant(BuildContext context, AssignParticipantState state, BillItem billItem) {
+    return billItem.participantsId.map((id) =>
+        Container(
+          margin: EdgeInsets.only(right: 2, left: 2),
+          child: Text(
+            "${id + 1}",
+            style: textTheme(context).bodyMedium,
+          ),
+          decoration: BoxDecoration(
+              border: Border.all(
+                color: colorScheme(context).outline,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(100))
+          ),
+          padding: EdgeInsets.only(top: 10, bottom: 10, left: 16, right: 16),
+        )
+    ).toList();
   }
 
   Widget renderBillSummary(BuildContext context, AssignParticipantState state) {
@@ -224,7 +259,7 @@ class AssignParticipantScreen extends StatelessWidget {
     items.add(renderBillSummaryItem(context, state, StringRes.others, state.bill.others.toString()));
     items.add(renderBillSummaryItem(context, state, StringRes.totalAmount, state.bill.total.toString()));
     return Container(
-      margin: EdgeInsets.only(top: 12),
+      margin: EdgeInsets.only(top: 12, left: 16, right: 16),
       child: Column(
         children: items,
       ),
@@ -244,10 +279,10 @@ class AssignParticipantScreen extends StatelessWidget {
     );
   }
 
-  Widget renderDivider(double topPadding) {
+  Widget renderDivider(double topMargin) {
     return Container(
-      padding: EdgeInsets.only(top: topPadding),
-      child: Divider(),
+      margin: EdgeInsets.only(top: topMargin, left: 16, right: 16),
+      child: Divider(height: 1, thickness: 1),
     );
   }
 }
