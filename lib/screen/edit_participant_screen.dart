@@ -96,7 +96,7 @@ class EditParticipantScreen extends StatelessWidget {
             },
             maxLength: 128,
             textCapitalization: TextCapitalization.sentences,
-            controller: textEditingControllerWithValue(participant.name),
+            controller: textEditingControllerWithValue(participant),
             decoration: inputDecoration(context, padding: 12, label: Text("${StringRes.participant} ${i + 1}"))
         ),
       )];

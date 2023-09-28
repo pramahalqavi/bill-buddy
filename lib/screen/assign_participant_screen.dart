@@ -1,4 +1,4 @@
-import 'package:billbuddy/model/participant.dart';
+import 'package:billbuddy/screen/split_summary_screen.dart';
 import 'package:billbuddy/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,9 +55,10 @@ class AssignParticipantScreen extends StatelessWidget {
 
   Widget renderProceedButton(BuildContext context, AssignParticipantState state) {
     var button = primaryTextButton(context, onPressed: () {
-    }, text: StringRes.next);
+      Navigator.push(context, SplitSummaryScreen.route(state.bill));
+    }, text: StringRes.proceed);
     List<Widget> columnChildren = [button];
-    return Padding(
+    return Container(
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,7 +114,7 @@ class AssignParticipantScreen extends StatelessWidget {
   List<Widget> renderParticipants(BuildContext context, AssignParticipantState state) {
     List<Widget> list = [];
     for (int i = 0; i < state.bill.participants.length; ++i) {
-      Participant participant = state.bill.participants[i];
+      String participant = state.bill.participants[i];
       var fillColor = i == state.selectedParticipantIdx ? colorScheme(context).primary : colorScheme(context).onPrimary;
       var outlineColor = i == state.selectedParticipantIdx ? colorScheme(context).onPrimary : colorScheme(context).outline;
       var txtThemeContainer = i == state.selectedParticipantIdx ? textThemePrimary(context) : textTheme(context);
@@ -145,7 +146,7 @@ class AssignParticipantScreen extends StatelessWidget {
                       constraints: BoxConstraints(maxWidth: 90, maxHeight: 110),
                       margin: EdgeInsets.only(top: 8),
                       child: Text(
-                        participant.name,
+                        participant,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme(context).bodyMedium,
                         maxLines: 1,

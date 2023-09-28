@@ -1,4 +1,4 @@
-import 'package:billbuddy/model/participant.dart';
+import 'package:billbuddy/model/split_report.dart';
 
 import 'bill_item.dart';
 
@@ -6,7 +6,7 @@ class Bill {
   String title;
   DateTime billDate;
   List<BillItem> items;
-  List<Participant> participants;
+  List<String> participants;
   int tax;
   int service;
   int discounts;
@@ -29,5 +29,40 @@ class Bill {
 
   void updateTotal() {
     total = getSubtotal() + tax + service - discounts + others;
+  }
+
+  List<BillItem> _getParticipantItems(int id) {
+    return items.where((element) => element.participantsId.contains(id)).toList();
+  }
+
+  double _getParticipantSubtotal(int id) {
+    double subtotal = 0;
+    for (var item in items) {
+      if (item.participantsId.contains(id)) {
+        subtotal += item.getAmountPerParticipant();
+      }
+    }
+    return subtotal;
+  }
+
+  SplitReport getParticipantReport(int id) {
+    double participantSubtotal = _getParticipantSubtotal(id);
+    double portion = participantSubtotal / getSubtotal();
+    double participantTax = tax * portion;
+    double participantService = service * portion;
+    double participantOthers = others * portion;
+    double participantDiscounts = discounts * portion;
+    double participantTotal = participantSubtotal + participantTax +
+        participantService + participantOthers - participantDiscounts;
+    return SplitReport(
+        id: id,
+        participant: participants[id],
+        items: _getParticipantItems(id),
+        tax: participantTax,
+        service: participantService,
+        discounts: participantOthers,
+        others: participantDiscounts,
+        total: participantTotal
+    );
   }
 }

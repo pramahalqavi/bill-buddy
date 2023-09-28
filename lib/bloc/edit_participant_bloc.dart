@@ -1,4 +1,3 @@
-import 'package:billbuddy/model/participant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../model/bill.dart';
@@ -11,7 +10,7 @@ class EditParticipantBloc extends Bloc<EditParticipantEvent, EditParticipantStat
   }
 
   void onAddParticipant(AddParticipantEvent event, Emitter<EditParticipantState> emitter) {
-    state.bill.participants.add(Participant());
+    state.bill.participants.add("");
     emitter(EditParticipantState(state.bill));
   }
 
@@ -23,7 +22,7 @@ class EditParticipantBloc extends Bloc<EditParticipantEvent, EditParticipantStat
 
   void onUpdateParticipant(UpdateParticipantEvent event, Emitter<EditParticipantState> emitter) {
     if (event.position < 0 || event.position >= state.bill.participants.length) return;
-    state.bill.participants[event.position].name = event.newName;
+    state.bill.participants[event.position] = event.newName;
     emitter(EditParticipantState(state.bill));
   }
 

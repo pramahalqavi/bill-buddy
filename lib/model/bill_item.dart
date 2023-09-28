@@ -10,4 +10,12 @@ class BillItem {
   int getTotalPrice() {
     return quantity * price;
   }
+
+  double getAmountPerParticipant() {
+    return amount / participantsId.length;
+  }
+
+  double getQuantityPerParticipant() {
+    return quantity / participantsId.length;
+  }
 }

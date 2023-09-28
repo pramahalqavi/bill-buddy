@@ -40,4 +40,6 @@ class StringRes {
   static const String assignParticipant = "Assign Participant";
   static const String assignParticipantToItems = "Assign participants to items";
   static const String assignParticipantInstruction = "Tap a participant and choose their items";
+  static const String proceed = "Proceed";
+  static const String home = "Home";
 }
