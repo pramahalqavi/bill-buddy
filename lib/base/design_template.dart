@@ -52,7 +52,7 @@ ButtonStyle primaryButtonStyle(BuildContext context, {double verticalPadding = 1
       padding: EdgeInsets.only(top: verticalPadding, bottom: verticalPadding),
       backgroundColor: colorScheme(context).primary,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(32.0),
       ));
 }
 

@@ -58,10 +58,11 @@ class Bill {
         id: id,
         participant: participants[id],
         items: _getParticipantItems(id),
+        subtotal: participantSubtotal,
         tax: participantTax,
         service: participantService,
-        discounts: participantOthers,
-        others: participantDiscounts,
+        discounts: participantDiscounts,
+        others: participantOthers,
         total: participantTotal
     );
   }

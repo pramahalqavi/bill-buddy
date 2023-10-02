@@ -1,5 +1,7 @@
+import 'package:billbuddy/base/app.dart';
 import 'package:billbuddy/bloc/split_summary_bloc.dart';
 import 'package:billbuddy/model/split_report.dart';
+import 'package:billbuddy/repository/bill_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +10,7 @@ import '../base/app_theme.dart';
 import '../base/design_template.dart';
 import '../model/bill.dart';
 import '../utils/string_res.dart';
+import '../utils/utils.dart';
 
 class SplitSummaryScreen extends StatelessWidget {
   final Bill initialBill;
@@ -19,7 +22,10 @@ class SplitSummaryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SplitSummaryBloc>(
-      create: (context) => SplitSummaryBloc(SplitSummaryState(initialBill)),
+      create: (context) => SplitSummaryBloc(
+          SplitSummaryState(initialBill),
+          context.read<BillRepository>()
+      ),
       child: BlocBuilder<SplitSummaryBloc, SplitSummaryState>(
         builder: (BuildContext context, state) => Scaffold(
             appBar: AppBar(
@@ -38,9 +44,13 @@ class SplitSummaryScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ListView(
-            children: renderContainerChildren(context, state),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.only(bottom: 16),
+              children: renderContainerChildren(context, state),
+            ),
           ),
           renderProceedButton(context, state)
         ],
@@ -50,14 +60,24 @@ class SplitSummaryScreen extends StatelessWidget {
 
   Widget renderProceedButton(BuildContext context, SplitSummaryState state) {
     return Container(
-        padding: EdgeInsets.all(16),
-        child: primaryTextButton(context, onPressed: () {}, text: StringRes.home)
+        padding: EdgeInsets.only(right: 16, left: 16, top: 12, bottom: 12),
+        child: Row(
+          children: [
+            Expanded(child: Container(margin: EdgeInsets.only(right: 4), child: primaryTextButton(context, onPressed: () {
+
+            }, text: StringRes.saveAndBackToHome))),
+            Expanded(child: Container(margin: EdgeInsets.only(left: 4), child: primaryTextButton(context, onPressed: () {
+
+            }, text: StringRes.share))),
+          ],
+        )
     );
   }
 
   List<Widget> renderContainerChildren(BuildContext context, SplitSummaryState state) {
     List<Widget> list = [];
     list.add(renderHeader(context, state));
+    list.add(renderDivider(16, 0));
     for (int i = 0; i < state.bill.participants.length; ++i) {
       var report = state.bill.getParticipantReport(i);
       list.add(renderParticipantReport(context, report));
@@ -67,6 +87,7 @@ class SplitSummaryScreen extends StatelessWidget {
 
   Widget renderHeader(BuildContext context, SplitSummaryState state) {
     return Container(
+      padding: EdgeInsets.only(top: 8, bottom: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -74,12 +95,17 @@ class SplitSummaryScreen extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.only(top: 8.0, left: 16, right: 16),
-            child: Text(StringRes.assignParticipantToItems, style: textTheme(context).headlineSmall,),
+            child: Text(state.bill.title, style: textTheme(context).headlineSmall,),
           ),
           Container(
             padding: const EdgeInsets.only(top: 4.0, left: 16, right: 16),
             child:
-            Text(StringRes.assignParticipantInstruction, style: textTheme(context).bodyMedium,),
+            Text(dateToString(state.bill.billDate, format: "dd MMM yyyy"), style: textTheme(context).bodyMedium,),
+          ),
+          Container(
+            padding: const EdgeInsets.only(top: 4.0, left: 16, right: 16),
+            child:
+            Text("${StringRes.billTotal} ${formatThousands(state.bill.total.toString())}", style: textTheme(context).bodyMedium,),
           ),
         ],
       ),
@@ -87,18 +113,94 @@ class SplitSummaryScreen extends StatelessWidget {
   }
 
   Widget renderParticipantReport(BuildContext context, SplitReport report) {
-    return Container();
+    List<Widget> list = [];
+    list.add(renderParticipantHeader(context, report));
+    for (int i = 0; i < report.items.length; ++i) {
+      list.add(renderParticipantBillItem(context, report, i));
+    }
+    list.add(renderDivider(16, 16));
+    list.add(renderParticipantSummary(context, report));
+    return Container(
+      child: Column(
+        children: list,
+      ),
+    );
   }
 
   Widget renderParticipantHeader(BuildContext context, SplitReport report) {
-    return Container();
+    return Container(
+      padding: EdgeInsets.only(top: 16, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+              padding: EdgeInsets.only(top: 4, bottom: 4, left: 16, right: 16),
+              child: Text("${report.participant}${StringRes.sTotal}", style: textTheme(context).titleMedium)
+          ),
+          Container(
+              padding: EdgeInsets.only(top: 4, bottom: 4, left: 16, right: 16),
+              child: Text(formatThousandsDouble(report.total), style: textTheme(context).titleMedium)
+          ),
+          renderDivider(12, 16)
+        ],
+      ),
+    );
   }
 
-  Widget renderParticipantBillItem(BuildContext context, SplitReport report) {
-    return Container();
+  Widget renderParticipantBillItem(BuildContext context, SplitReport report, int itemIdx) {
+    return Container(
+      padding: EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
+      child: Row(
+        children: [
+          Expanded(
+              flex: 9,
+              child: Text(report.items[itemIdx].name, style: textTheme(context).bodyMedium)
+          ),
+          Expanded(
+              flex: 2,
+              child: Text("X${formatThousandsDouble(report.items[itemIdx].getQuantityPerParticipant())}", style: textTheme(context).bodyMedium)
+          ),
+          Expanded(
+              flex: 3,
+              child: Text(formatThousandsDouble(report.items[itemIdx].getAmountPerParticipant()), style: textTheme(context).bodyMedium, textAlign: TextAlign.right,)
+          )
+        ],
+      ),
+    );
   }
 
   Widget renderParticipantSummary(BuildContext context, SplitReport report) {
-    return Container();
+    return Column(
+      children: [
+        renderParticipantSummaryItem(context, StringRes.tax, formatThousandsDouble(report.tax)),
+        renderParticipantSummaryItem(context, StringRes.serviceCharge, formatThousandsDouble(report.service)),
+        renderParticipantSummaryItem(context, StringRes.discounts, formatThousandsDouble(report.discounts)),
+        renderParticipantSummaryItem(context, StringRes.others, formatThousandsDouble(report.others)),
+        renderDivider(16, 0)
+      ],
+    );
+  }
+
+  Widget renderParticipantSummaryItem(BuildContext context, String label, String value) {
+    return Container(
+      padding: EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label, style: textTheme(context).bodyMedium)
+          ),
+          Expanded(
+              child: Text(value, style: textTheme(context).bodyMedium, textAlign: TextAlign.right,)
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget renderDivider(double topMargin, double verticalMargin) {
+    return Container(
+      margin: EdgeInsets.only(top: topMargin, left: verticalMargin, right: verticalMargin),
+      child: Divider(height: 1, thickness: 1),
+    );
   }
 }

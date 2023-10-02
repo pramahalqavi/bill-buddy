@@ -41,5 +41,9 @@ class StringRes {
   static const String assignParticipantToItems = "Assign participants to items";
   static const String assignParticipantInstruction = "Tap a participant and choose their items";
   static const String proceed = "Proceed";
-  static const String home = "Home";
+  static const String saveAndBackToHome = "Save & Back to Home";
+  static const String share = "Share";
+
+  static const String sTotal = "'s total";
+  static const String billTotal = "Bill Total:";
 }
