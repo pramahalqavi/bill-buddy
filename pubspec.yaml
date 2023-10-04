@@ -51,6 +51,9 @@ dependencies:
   floor: ^1.4.2
   sqflite: ^2.3.0
   intl: ^0.18.1
+  screenshot: ^2.1.0
+  esys_flutter_share_plus: ^2.2.0
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:
