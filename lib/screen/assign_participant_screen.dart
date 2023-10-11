@@ -54,10 +54,24 @@ class AssignParticipantScreen extends StatelessWidget {
   }
 
   Widget renderProceedButton(BuildContext context, AssignParticipantState state) {
+    var errorMsg = (state.assignParticipantError?.participantNotAssignedError == true) ?
+    StringRes.participantNotAssignedErrorMsg : (state.assignParticipantError?.billItemNotAssignedError == true) ?
+    StringRes.billItemNotAssignedErrorMsg : "";
+    var error = Container(
+        margin: EdgeInsets.only(bottom: 4),
+        child: Text(errorMsg, textAlign: TextAlign.center, style: errorTextStyle(context))
+    );
     var button = primaryTextButton(context, onPressed: () {
-      Navigator.push(context, SplitSummaryScreen.route(state.bill));
+      if (context.read<AssignParticipantBloc>().isAssignParticipantValid()) {
+        Navigator.push(context, SplitSummaryScreen.route(state.bill));
+      } else {
+        context.read<AssignParticipantBloc>().add(AssignParticipantErrorEvent());
+      }
     }, text: StringRes.proceed);
-    List<Widget> columnChildren = [button];
+    List<Widget> columnChildren = [
+      if (errorMsg.isNotEmpty) error,
+      button
+    ];
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -181,13 +195,17 @@ class AssignParticipantScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
+                      flex: 17,
                       child: Text(state.bill.items[index].name, style: textTheme(context).bodyLarge,),
                   ),
-                  Checkbox(
-                      value: state.bill.items[index].participantsId.contains(state.selectedParticipantIdx),
-                      onChanged: (isChecked) {
-                        context.read<AssignParticipantBloc>().add(BillItemSelectedEvent(index));
-                      }
+                  Expanded(
+                    flex: 1,
+                    child: Checkbox(
+                        value: state.bill.items[index].participantsId.contains(state.selectedParticipantIdx),
+                        onChanged: (isChecked) {
+                          context.read<AssignParticipantBloc>().add(BillItemSelectedEvent(index));
+                        }
+                    ),
                   )
                 ],
               ),
@@ -216,7 +234,7 @@ class AssignParticipantScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
+            if (state.bill.items[index].participantsId.isNotEmpty) Container(
               height: 56,
               padding: EdgeInsets.only(top: 12, left: 16, right: 16),
               child: ListView(

@@ -13,15 +13,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../utils/string_res.dart';
 
 class EditBillScreen extends StatelessWidget {
-  const EditBillScreen({super.key});
+  final Bill? initialBill;
 
-  static Route route() => MaterialPageRoute(builder: (context) => EditBillScreen());
+  const EditBillScreen({this.initialBill = null, super.key});
+
+  static Route route(Bill? bill) => MaterialPageRoute(builder: (context) => EditBillScreen(initialBill: bill));
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<EditBillBloc>(
       create: (context) => EditBillBloc(
-          EditBillState(Bill(billDate: DateTime.now(), items: [], participants: [""]))
+          EditBillState(initialBill == null ? Bill(billDate: DateTime.now(), items: [], participants: [""]) : initialBill!)
       ),
       child: BlocBuilder<EditBillBloc, EditBillState>(
         builder: (context, state) => Scaffold(
@@ -297,6 +299,12 @@ class EditBillScreen extends StatelessWidget {
   }
 
   Widget renderSubmitButton(BuildContext context, EditBillState state) {
+    var errorMsg = (state.editBillError?.itemsLengthError == true) ?
+    StringRes.itemsLengthErrorMsg : (state.editBillError?.itemQuantityError == true) ? StringRes.itemQtyErrorMsg : "";
+    var error = Container(
+        margin: EdgeInsets.only(bottom: 4),
+        child: Text(errorMsg, textAlign: TextAlign.center, style: errorTextStyle(context))
+    );
     var button = primaryTextButton(context, onPressed: () {
       EditBillBloc bloc = context.read<EditBillBloc>();
       if (bloc.isBillValid()) {
@@ -306,7 +314,10 @@ class EditBillScreen extends StatelessWidget {
         bloc.add(EditBillProceedErrorEvent());
       }
     }, text: StringRes.next);
-    List<Widget> columnChildren = [button];
+    List<Widget> columnChildren = [
+      if (errorMsg.isNotEmpty) error,
+      button
+    ];
     return Padding(
       padding: EdgeInsets.only(top: 16),
       child: Column(

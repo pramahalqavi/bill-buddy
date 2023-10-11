@@ -70,11 +70,19 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   void editBillProceedError(EditBillProceedErrorEvent event, Emitter<EditBillState> emitter) {
     bool othersError = state.bill.others < 0;
     bool totalError = state.bill.total <= 0;
-    emitter(EditBillState(state.bill, editBillError: EditBillError(othersError: othersError, totalError: totalError)));
+    bool itemsLengthError = state.bill.items.isEmpty;
+    bool itemQtyError = state.bill.items.where((element) => element.quantity <= 0).isNotEmpty;
+    emitter(EditBillState(state.bill,
+        editBillError: EditBillError(
+          othersError: othersError,
+          totalError: totalError,
+          itemsLengthError: itemsLengthError,
+          itemQuantityError: itemQtyError
+        )));
   }
 
   bool isBillValid() {
-    return state.bill.others >= 0 && state.bill.total > 0;
+    return state.bill.others >= 0 && state.bill.total > 0 && state.bill.items.isNotEmpty;
   }
 
   void _resetError() {
@@ -85,7 +93,6 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
     if (state.bill.title.isEmpty) {
       state.bill.title = "${StringRes.bill} ${dateToString(state.bill.billDate)}";
     }
-    state.bill.items.removeWhere((element) => element.amount <= 0);
     for (int i = 0; i < state.bill.items.length; ++i) {
       var item = state.bill.items[i];
       if (item.name.isEmpty) item.name = "${StringRes.item} ${i + 1}";
@@ -133,8 +140,10 @@ class EditBillProceedErrorEvent extends EditBillEvent {}
 class EditBillError {
   bool totalError;
   bool othersError;
+  bool itemsLengthError;
+  bool itemQuantityError;
 
-  EditBillError({required this.totalError, required this.othersError});
+  EditBillError({required this.totalError, required this.othersError, required this.itemsLengthError, required this.itemQuantityError});
 }
 
 class EditBillState {

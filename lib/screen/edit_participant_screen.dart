@@ -119,6 +119,7 @@ class EditParticipantScreen extends StatelessWidget {
 
   Widget renderProceedButton(BuildContext context, EditParticipantState state) {
     var button = primaryTextButton(context, onPressed: () {
+      context.read<EditParticipantBloc>().setDefaultParticipants();
       Navigator.push(context, AssignParticipantScreen.route(state.bill));
     }, text: StringRes.next);
     List<Widget> columnChildren = [button];

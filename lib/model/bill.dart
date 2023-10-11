@@ -3,6 +3,7 @@ import 'package:billbuddy/model/split_report.dart';
 import 'bill_item.dart';
 
 class Bill {
+  int? id;
   String title;
   DateTime billDate;
   List<BillItem> items;
@@ -13,7 +14,7 @@ class Bill {
   int others;
   int total;
 
-  Bill({this.title = "", required this.billDate, this.items = const [],
+  Bill({this.id, this.title = "", required this.billDate, this.items = const [],
     this.participants = const [], this.tax = 0, this.service = 0,
     this.discounts = 0, this.others = 0, this.total = 0});
 
@@ -47,7 +48,8 @@ class Bill {
 
   SplitReport getParticipantReport(int id) {
     double participantSubtotal = _getParticipantSubtotal(id);
-    double portion = participantSubtotal / getSubtotal();
+    int subtotal = getSubtotal();
+    double portion = subtotal > 0 ? participantSubtotal / getSubtotal() : 1 / participants.length;
     double participantTax = tax * portion;
     double participantService = service * portion;
     double participantOthers = others * portion;

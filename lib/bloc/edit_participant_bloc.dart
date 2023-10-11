@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../model/bill.dart';
+import '../utils/string_res.dart';
 
 class EditParticipantBloc extends Bloc<EditParticipantEvent, EditParticipantState> {
   EditParticipantBloc(super.initialState) {
@@ -26,6 +27,14 @@ class EditParticipantBloc extends Bloc<EditParticipantEvent, EditParticipantStat
     emitter(EditParticipantState(state.bill));
   }
 
+  void setDefaultParticipants() {
+    List<String> validated = [];
+    for (int i = 0; i < state.bill.participants.length; ++i) {
+      var person = state.bill.participants[i];
+      validated.add(person.isEmpty ? "${StringRes.participant} ${i + 1}" : person);
+    }
+    state.bill.participants = validated;
+  }
 }
 
 abstract class EditParticipantEvent {}

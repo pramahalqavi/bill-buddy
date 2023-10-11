@@ -11,13 +11,15 @@ import '../base/design_template.dart';
 import '../model/bill.dart';
 import '../utils/string_res.dart';
 import '../utils/utils.dart';
+import 'home_screen.dart';
 
 class SplitSummaryScreen extends StatelessWidget {
   final Bill initialBill;
+  final bool isViewOnly;
 
-  const SplitSummaryScreen(this.initialBill, {super.key});
+  const SplitSummaryScreen(this.initialBill, {this.isViewOnly = false, super.key});
 
-  static Route route(Bill bill) => MaterialPageRoute(builder: (context) => SplitSummaryScreen(bill));
+  static Route route(Bill bill, {bool isViewOnly = false}) => MaterialPageRoute(builder: (context) => SplitSummaryScreen(bill, isViewOnly: isViewOnly,));
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,8 @@ class SplitSummaryScreen extends StatelessWidget {
       create: (context) => SplitSummaryBloc(
           SplitSummaryState(initialBill),
           context.read<BillRepository>(),
-          ScreenshotController()
+          ScreenshotController(),
+          isViewOnly: isViewOnly
       ),
       child: BlocBuilder<SplitSummaryBloc, SplitSummaryState>(
         builder: (BuildContext context, state) => Scaffold(
@@ -48,20 +51,29 @@ class SplitSummaryScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Screenshot(
-                controller: context.read<SplitSummaryBloc>().screenshotController,
-                child: Container(
-                  color: Colors.white,
-                  child: ListView(
-                    shrinkWrap: true,
-                    addAutomaticKeepAlives: false,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.only(bottom: 16),
-                    children: renderContainerChildren(context, state),
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                SingleChildScrollView(
+                  child: Screenshot(
+                    controller: context.read<SplitSummaryBloc>().screenshotController,
+                    child: Container(
+                      color: Colors.white,
+                      child: ListView(
+                        shrinkWrap: true,
+                        addAutomaticKeepAlives: false,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.only(bottom: 16),
+                        children: renderContainerChildren(context, state),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                if (state.isLoading) Container(
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator()
+                )
+              ],
             ),
           ),
           renderProceedButton(context, state)
@@ -75,11 +87,16 @@ class SplitSummaryScreen extends StatelessWidget {
         padding: EdgeInsets.only(right: 16, left: 16, top: 12, bottom: 12),
         child: Row(
           children: [
-            Expanded(child: Container(margin: EdgeInsets.only(right: 4), child: primaryTextButton(context, onPressed: () {
-
+            if (!isViewOnly) Expanded(child: Container(margin: EdgeInsets.only(right: 4), child: primaryTextButton(context, onPressed: () async {
+              if (!state.isLoading) {
+                context.read<SplitSummaryBloc>().add(SaveEvent());
+                await context.read<SplitSummaryBloc>().saveBill();
+                Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst);
+                Navigator.pushReplacement(context, HomeScreen.route());
+              }
             }, text: StringRes.saveAndBackToHome))),
             Expanded(child: Container(margin: EdgeInsets.only(left: 4), child: primaryTextButton(context, onPressed: () {
-              context.read<SplitSummaryBloc>().add(ShareEvent());
+              if (!state.isLoading) context.read<SplitSummaryBloc>().add(ShareEvent());
             }, text: StringRes.share))),
           ],
         )

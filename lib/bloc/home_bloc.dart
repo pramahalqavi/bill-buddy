@@ -1,21 +1,38 @@
-import 'package:billbuddy/model/result.dart';
+import 'dart:developer';
+
 import 'package:billbuddy/repository/bill_repository.dart';
+import 'package:billbuddy/utils/string_res.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../database/entity/bill_entity.dart';
+import '../model/bill.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final BillRepository billRepository;
   HomeBloc(super.initialState, this.billRepository) {
-    on<InitHomeEvent>(initHome);
+    on<InitHomeEvent>(onInitHome);
+    on<DeleteBillEvent>(onDeleteBill);
   }
 
-  void initHome(InitHomeEvent event, Emitter<HomeState> emitter) async {
-    emitter(HomeState(Result(Status.Loading)));
+  void onInitHome(InitHomeEvent event, Emitter<HomeState> emitter) async {
+    emitter(HomeState(bills: state.bills, isLoading: true));
     try {
-      List<BillEntity> bills = await billRepository.getBills();
-      emitter(HomeState(Result(Status.Success, data: bills)));
+      var bills = await billRepository.getBills();
+      emitter(HomeState(bills: bills, isLoading: false));
     } catch (error) {
-      emitter(HomeState(Result(Status.Error)));
+      emitter(HomeState(bills: [], isErrorInit: true, isLoading: false));
+      log("error init: ${error.toString()}");
+    }
+  }
+
+  void onDeleteBill(DeleteBillEvent event, Emitter<HomeState> emitter) async {
+    if (event.index >= state.bills.length || state.bills[event.index].id == null) return;
+    emitter(HomeState(bills: state.bills, isLoading: true));
+    try {
+      await billRepository.deleteBill(state.bills[event.index].id!);
+      var bills = await billRepository.getBills();
+      emitter(HomeState(bills: bills, isLoading: false, snackbarMessage: StringRes.deleteBillSuccessMsg));
+    } catch (error) {
+      emitter(HomeState(bills: state.bills, isLoading: false, snackbarMessage: StringRes.deleteBillErrorMsg));
+      log("error delete: ${error.toString()}");
     }
   }
 }
@@ -24,15 +41,17 @@ abstract class HomeEvent {}
 
 class InitHomeEvent extends HomeEvent {}
 
+class DeleteBillEvent extends HomeEvent {
+  int index;
+
+  DeleteBillEvent(this.index);
+}
+
 class HomeState {
-  Result<List<BillEntity>> billsResult;
-  HomeState(this.billsResult);
+  bool isLoading;
+  bool isErrorInit;
+  List<Bill> bills;
+  String? snackbarMessage;
 
-  Status getStatus() {
-    return billsResult.status;
-  }
-
-  List<BillEntity> getBills() {
-    return billsResult.data ?? [];
-  }
+  HomeState({required this.bills, this.isLoading = false, this.isErrorInit = false, this.snackbarMessage});
 }

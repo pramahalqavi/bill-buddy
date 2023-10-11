@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:esys_flutter_share_plus/esys_flutter_share_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,14 +12,27 @@ import '../repository/bill_repository.dart';
 class SplitSummaryBloc extends Bloc<SplitSummaryEvent, SplitSummaryState> {
   final BillRepository _billRepository;
   final ScreenshotController screenshotController;
+  final isViewOnly;
 
-  SplitSummaryBloc(super.initialState, this._billRepository, this.screenshotController) {
+  SplitSummaryBloc(super.initialState, this._billRepository, this.screenshotController, {this.isViewOnly = false}) {
     on<SaveEvent>(onSaveEvent);
     on<ShareEvent>(onShareEvent);
   }
 
   void onSaveEvent(SaveEvent event, Emitter<SplitSummaryState> emitter) {
-    // _billRepository.
+    emitter(SplitSummaryState(state.bill, isLoading: true));
+  }
+
+  Future<void> saveBill() async {
+    if (state.bill.id == null) {
+      _billRepository.insertBill(state.bill).catchError((e) {
+        log("error insert bill: ${e.toString()}");
+      });
+    } else {
+      _billRepository.updateBill(state.bill).catchError((e) {
+        log("error update bill: ${e.toString()}");
+      });
+    }
   }
 
   void onShareEvent(ShareEvent event, Emitter<SplitSummaryState> emitter) async {
@@ -31,7 +43,7 @@ class SplitSummaryBloc extends Bloc<SplitSummaryEvent, SplitSummaryState> {
       imgFile.writeAsBytes(imageBytes);
       await Share.file("Bill", "bill.png", imageBytes, "image/png");
     }).catchError((e) {
-      log(e);
+      log("error share: ${e.toString()}");
     });
   }
 }
@@ -43,6 +55,7 @@ class ShareEvent extends SplitSummaryEvent {}
 
 class SplitSummaryState {
   Bill bill;
+  bool isLoading;
 
-  SplitSummaryState(this.bill);
+  SplitSummaryState(this.bill, {this.isLoading = false});
 }
