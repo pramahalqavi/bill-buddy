@@ -15,7 +15,7 @@ class Bill {
   int total;
 
   Bill({this.id, this.title = "", required this.billDate, this.items = const [],
-    this.participants = const [], this.tax = 0, this.service = 0,
+    this.participants = const [""], this.tax = 0, this.service = 0,
     this.discounts = 0, this.others = 0, this.total = 0});
 
   int getSubtotal() {

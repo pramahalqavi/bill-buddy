@@ -49,14 +49,18 @@ class StringRes {
   static const String sTotal = "'s total";
   static const String billTotal = "Bill Total:";
   static String itemAndParticipantCount(int itemCount, int participantCount) {
-    return "$itemCount items • $participantCount participants";
+    String itemText = itemCount > 1 ? "items" : "item";
+    String participantText = participantCount > 1 ? "participants" : "participant";
+    return "$itemCount $itemText • $participantCount $participantText";
   }
   static const String seeDetail = "See Detail";
   static const String deleteBill = "Delete bill";
   static const String deleteBillSuccessMsg = "Delete bill successful";
   static const String deleteBillErrorMsg = "Delete bill unsuccessful";
+  static const String scanBillErrorMsg = "There was an error while trying to scan the image";
   static const String editBill = "Edit bill";
 
   static const String participantNotAssignedErrorMsg = "All participants must be assigned to at least one item";
   static const String billItemNotAssignedErrorMsg = "All items must be assigned to at least one participant";
+  static const String addFromImage = "Add from image";
 }

@@ -85,7 +85,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Bill` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `billDate` INTEGER NOT NULL, `tax` INTEGER NOT NULL, `service` INTEGER NOT NULL, `discounts` INTEGER NOT NULL, `others` INTEGER NOT NULL, `total` INTEGER NOT NULL, `items` TEXT NOT NULL, `participants` TEXT NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Bill` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `billDate` INTEGER NOT NULL, `updatedDate` INTEGER NOT NULL, `tax` INTEGER NOT NULL, `service` INTEGER NOT NULL, `discounts` INTEGER NOT NULL, `others` INTEGER NOT NULL, `total` INTEGER NOT NULL, `items` TEXT NOT NULL, `participants` TEXT NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -111,6 +111,7 @@ class _$BillDao extends BillDao {
                   'id': item.id,
                   'title': item.title,
                   'billDate': item.billDate,
+                  'updatedDate': item.updatedDate,
                   'tax': item.tax,
                   'service': item.service,
                   'discounts': item.discounts,
@@ -127,6 +128,7 @@ class _$BillDao extends BillDao {
                   'id': item.id,
                   'title': item.title,
                   'billDate': item.billDate,
+                  'updatedDate': item.updatedDate,
                   'tax': item.tax,
                   'service': item.service,
                   'discounts': item.discounts,
@@ -148,11 +150,13 @@ class _$BillDao extends BillDao {
 
   @override
   Future<List<BillEntity>> getAllBill() async {
-    return _queryAdapter.queryList('SELECT * FROM Bill',
+    return _queryAdapter.queryList(
+        'SELECT * FROM Bill ORDER BY updatedDate DESC',
         mapper: (Map<String, Object?> row) => BillEntity(
             id: row['id'] as int?,
             title: row['title'] as String,
             billDate: row['billDate'] as int,
+            updatedDate: row['updatedDate'] as int,
             tax: row['tax'] as int,
             service: row['service'] as int,
             discounts: row['discounts'] as int,

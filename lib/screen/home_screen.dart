@@ -1,3 +1,4 @@
+import 'package:billbuddy/base/app.dart';
 import 'package:billbuddy/base/app_theme.dart';
 import 'package:billbuddy/bloc/home_bloc.dart';
 import 'package:billbuddy/repository/bill_repository.dart';
@@ -6,6 +7,9 @@ import 'package:billbuddy/screen/split_summary_screen.dart';
 import 'package:billbuddy/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import '../base/design_template.dart';
 import '../utils/string_res.dart';
 
@@ -31,6 +35,10 @@ class HomeScreen extends StatelessWidget {
               bloc: context.read<HomeBloc>(),
               listener: (BuildContext context, HomeState state) {
                 if (state.snackbarMessage != null) showSnackbar(context, state.snackbarMessage!);
+                if (state.scannedBill != null) {
+                  Navigator.push(context, EditBillScreen.route(state.scannedBill));
+                  state.scannedBill = null;
+                }
               },
               child: homeContainer(context, state)),
           floatingActionButton: homeFloatingButton(context, state),
@@ -40,15 +48,49 @@ class HomeScreen extends StatelessWidget {
   }
   
   Widget homeFloatingButton(BuildContext context, HomeState state) {
-    return FloatingActionButton(
-      onPressed: () {
-        if (!state.isLoading) {
-          Navigator.push(context, EditBillScreen.route(null));
-        }
-      },
+    return SpeedDial(
+      spaceBetweenChildren: 16,
+      spacing: 8,
+      childPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      icon: Icons.add,
+      activeIcon: Icons.close,
       backgroundColor: colorScheme(context).primary,
-      child: Icon(Icons.add, color: colorScheme(context).onPrimary,),
-      tooltip: StringRes.addBill,
+      foregroundColor: colorScheme(context).onPrimary,
+      overlayColor: Colors.black,
+      overlayOpacity: 0.6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      children: [
+        SpeedDialChild( //// speed dial child
+            child: Icon(Icons.add, color: colorScheme(context).onPrimary),
+            backgroundColor: colorScheme(context).primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            label: null,
+            labelWidget: Container(margin: EdgeInsets.only(right: 12),
+                child: Text(StringRes.add, style: textThemePrimary(context).bodyLarge)),
+            labelStyle: textTheme(context).bodyMedium,
+            onTap: () {
+              if (!state.isLoading) {
+                Navigator.push(context, EditBillScreen.route(null));
+              }
+            }),
+        SpeedDialChild( //// speed dial child
+            child: Icon(Icons.image, color: colorScheme(context).onPrimary),
+            backgroundColor: colorScheme(context).primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            label: null,
+            labelWidget: Container(margin: EdgeInsets.only(right: 12),
+                child: Text(StringRes.addFromImage, style: textThemePrimary(context).bodyLarge)),
+            labelStyle: textTheme(context).bodyMedium,
+            onTap: () async {
+              context.read<HomeBloc>().add(RecognizeBillEvent(getIt.get<ImagePicker>(), getIt.get<TextRecognizer>()));
+            }),
+      ],
     );
   }
 

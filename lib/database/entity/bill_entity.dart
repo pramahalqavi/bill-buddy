@@ -8,6 +8,8 @@ class BillEntity {
   final String title;
   @ColumnInfo(name: "billDate")
   final int billDate;
+  @ColumnInfo(name: "updatedDate")
+  final int updatedDate;
   @ColumnInfo(name: "tax")
   final int tax;
   @ColumnInfo(name: "service")
@@ -28,12 +30,12 @@ class BillEntity {
       {this.id,
       required this.title,
       required this.billDate,
+      required this.updatedDate,
       required this.tax,
       required this.service,
       required this.discounts,
       required this.others,
       required this.total,
       required this.items,
-      required this.participants}
-      );
+      required this.participants});
 }

@@ -162,11 +162,11 @@ class SplitSummaryScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-              padding: EdgeInsets.only(top: 4, bottom: 4, left: 16, right: 16),
+              padding: EdgeInsets.only(top: 4, left: 16, right: 16),
               child: Text("${report.participant}${StringRes.sTotal}", style: textTheme(context).titleMedium)
           ),
           Container(
-              padding: EdgeInsets.only(top: 4, bottom: 4, left: 16, right: 16),
+              padding: EdgeInsets.only(top: 4, left: 16, right: 16),
               child: Text(formatThousandsDouble(report.total), style: textTheme(context).titleMedium)
           ),
         ],
@@ -176,7 +176,7 @@ class SplitSummaryScreen extends StatelessWidget {
 
   Widget renderParticipantBillItem(BuildContext context, SplitReport report, int itemIdx) {
     return Container(
-      padding: EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
+      padding: EdgeInsets.only(top: 6, bottom: 6, left: 16, right: 16),
       child: Row(
         children: [
           Expanded(
@@ -203,7 +203,7 @@ class SplitSummaryScreen extends StatelessWidget {
         children: [
           renderParticipantSummaryItem(context, StringRes.tax, formatThousandsDouble(report.tax)),
           renderParticipantSummaryItem(context, StringRes.serviceCharge, formatThousandsDouble(report.service)),
-          renderParticipantSummaryItem(context, StringRes.discounts, formatThousandsDouble(report.discounts)),
+          renderParticipantSummaryItem(context, StringRes.discounts, formatThousandsDouble(report.discounts, addNegativePrefix: true)),
           renderParticipantSummaryItem(context, StringRes.others, formatThousandsDouble(report.others)),
           if (showDivider) renderDivider(16, 0)
         ],
@@ -213,7 +213,7 @@ class SplitSummaryScreen extends StatelessWidget {
 
   Widget renderParticipantSummaryItem(BuildContext context, String label, String value) {
     return Container(
-      padding: EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
+      padding: EdgeInsets.only(top: 6, bottom: 6, left: 16, right: 16),
       child: Row(
         children: [
           Expanded(

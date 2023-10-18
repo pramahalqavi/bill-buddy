@@ -271,12 +271,12 @@ class AssignParticipantScreen extends StatelessWidget {
 
   Widget renderBillSummary(BuildContext context, AssignParticipantState state) {
     List<Widget> items = [];
-    items.add(renderBillSummaryItem(context, state, StringRes.subtotal, state.bill.getSubtotal().toString()));
-    items.add(renderBillSummaryItem(context, state, StringRes.tax, state.bill.tax.toString()));
-    items.add(renderBillSummaryItem(context, state, StringRes.serviceCharge, state.bill.service.toString()));
-    items.add(renderBillSummaryItem(context, state, StringRes.discounts, state.bill.discounts.toString()));
-    items.add(renderBillSummaryItem(context, state, StringRes.others, state.bill.others.toString()));
-    items.add(renderBillSummaryItem(context, state, StringRes.totalAmount, state.bill.total.toString()));
+    items.add(renderBillSummaryItem(context, state, StringRes.subtotal, formatThousands(state.bill.getSubtotal().toString())));
+    items.add(renderBillSummaryItem(context, state, StringRes.tax, formatThousands(state.bill.tax.toString())));
+    items.add(renderBillSummaryItem(context, state, StringRes.serviceCharge, formatThousands(state.bill.service.toString())));
+    items.add(renderBillSummaryItem(context, state, StringRes.discounts, formatThousands(state.bill.discounts.toString(), addNegativePrefix: true)));
+    items.add(renderBillSummaryItem(context, state, StringRes.others, formatThousands(state.bill.others.toString())));
+    items.add(renderBillSummaryItem(context, state, StringRes.totalAmount, formatThousands(state.bill.total.toString())));
     return Container(
       margin: EdgeInsets.only(top: 12, left: 16, right: 16),
       child: Column(
@@ -292,7 +292,7 @@ class AssignParticipantScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(child: Text(itemName, style: textTheme(context).titleSmall)),
-          Expanded(child: Text(formatThousands(itemValue), textAlign: TextAlign.right, style: textTheme(context).titleMedium))
+          Expanded(child: Text(itemValue, textAlign: TextAlign.right, style: textTheme(context).titleMedium))
         ],
       ),
     );

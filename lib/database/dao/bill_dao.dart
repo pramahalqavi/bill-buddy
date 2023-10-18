@@ -4,7 +4,7 @@ import 'package:floor/floor.dart';
 
 @dao
 abstract class BillDao {
-  @Query("SELECT * FROM Bill")
+  @Query("SELECT * FROM Bill ORDER BY updatedDate DESC")
   Future<List<BillEntity>> getAllBill();
 
   @insert

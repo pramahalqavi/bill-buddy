@@ -1,8 +1,11 @@
 import 'dart:developer';
 
 import 'package:billbuddy/repository/bill_repository.dart';
+import 'package:billbuddy/utils/bill_recognizer.dart';
 import 'package:billbuddy/utils/string_res.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import '../model/bill.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
@@ -10,6 +13,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(super.initialState, this.billRepository) {
     on<InitHomeEvent>(onInitHome);
     on<DeleteBillEvent>(onDeleteBill);
+    on<RecognizeBillEvent>(onRecognizeImage);
   }
 
   void onInitHome(InitHomeEvent event, Emitter<HomeState> emitter) async {
@@ -35,6 +39,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       log("error delete: ${error.toString()}");
     }
   }
+
+  void onRecognizeImage(RecognizeBillEvent event, Emitter<HomeState> emitter) async {
+    XFile? image = await event.imagePicker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      RecognizedText recognizedText = await event.textRecognizer.processImage(
+          InputImage.fromFilePath(image.path));
+      Bill result = BillRecognizer(recognizedText).recognize();
+      event.textRecognizer.close();
+      emitter(HomeState(bills: state.bills, scannedBill: result));
+    } else {
+      emitter(HomeState(bills: state.bills, snackbarMessage: StringRes.scanBillErrorMsg));
+    }
+  }
 }
 
 abstract class HomeEvent {}
@@ -47,11 +64,20 @@ class DeleteBillEvent extends HomeEvent {
   DeleteBillEvent(this.index);
 }
 
+class RecognizeBillEvent extends HomeEvent {
+  bool isFromCamera;
+  ImagePicker imagePicker;
+  TextRecognizer textRecognizer;
+
+  RecognizeBillEvent(this.imagePicker, this.textRecognizer, {this.isFromCamera = false});
+}
+
 class HomeState {
   bool isLoading;
   bool isErrorInit;
   List<Bill> bills;
   String? snackbarMessage;
+  Bill? scannedBill;
 
-  HomeState({required this.bills, this.isLoading = false, this.isErrorInit = false, this.snackbarMessage});
+  HomeState({required this.bills, this.isLoading = false, this.isErrorInit = false, this.snackbarMessage, this.scannedBill});
 }

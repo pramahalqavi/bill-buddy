@@ -54,6 +54,9 @@ dependencies:
   screenshot: ^2.1.0
   esys_flutter_share_plus: ^2.2.0
   path_provider: ^2.1.1
+  flutter_speed_dial: ^7.0.0
+  google_mlkit_text_recognition: ^0.10.0
+  image_picker: ^1.0.4
 
 dev_dependencies:
   flutter_test:

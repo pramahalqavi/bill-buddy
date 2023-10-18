@@ -11,6 +11,7 @@ class BillTransformer {
         id: bill.id,
         title: bill.title,
         billDate: bill.billDate.millisecondsSinceEpoch,
+        updatedDate: DateTime.now().millisecondsSinceEpoch,
         tax: bill.tax,
         service: bill.service,
         discounts: bill.discounts,
