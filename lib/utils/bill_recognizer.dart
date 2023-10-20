@@ -50,7 +50,7 @@ class BillRecognizer {
       billDate: DateTime.now(),
       tax: tax,
       service: service,
-      discounts: discount,
+      discount: discount,
       others: others,
       total: total,
       items: items
@@ -58,6 +58,7 @@ class BillRecognizer {
   }
 
   String _findTitle(RecognizedText text) {
+    if (text.blocks.isEmpty) return "";
     String title = "";
     for (TextLine line in text.blocks.first.lines) {
       title = "${line.text.trim()} ";
@@ -68,21 +69,28 @@ class BillRecognizer {
   List<BillItem> _findItems(List<String> lines, int total) {
     int calculatedTotal = 0;
     List<BillItem> items = [];
+    Map<String, int> addedItems = {};
+    int addedIdx = 0;
     for (int i = 0; i < lines.length; ++i) {
       if (priceRegex.hasMatch(lines[i])) {
         int priceNum = _getPriceFromLine(lines[i], total);
-        int qtyNum = _getQtyFromLine(lines[i]);
-        if (qtyNum == 0 && i < lines.length - 1) {
-          qtyNum = _getQtyFromLine(lines[i + 1]);
-        }
+        String priceText = _getPriceStringFromLine(lines[i], total);
         String itemName = _getItemNameFromLine(lines[i]);
         if (itemName.length < 3 && i > 0) {
           itemName = _getItemNameFromLine(lines[i - 1]);
         }
+        int qtyNum = _getQtyFromLine(lines[i], priceText: priceText);
+        if (qtyNum == 0 && i < lines.length - 1) {
+          qtyNum = _getQtyFromLine(lines[i + 1], priceText: priceText);
+        }
         print("Items itemName $itemName priceNum $priceNum qtyNum $qtyNum");
+        if (qtyNum == 0 || priceNum * qtyNum > total) {
+          qtyNum = 1;
+        } else if (priceNum % qtyNum == 0) {
+          priceNum = priceNum ~/ qtyNum;
+        }
         if (priceNum > 0 && itemName.isNotEmpty && priceNum > total * priceBottomThreshold) {
           bool shouldAdd = false;
-          if (qtyNum == 0) qtyNum = 1;
           if (priceNum * qtyNum + calculatedTotal <= total * priceTopThreshold) {
             shouldAdd = true;
             calculatedTotal += priceNum * qtyNum;
@@ -91,22 +99,39 @@ class BillRecognizer {
             calculatedTotal += priceNum;
             qtyNum = 1;
           }
+
           if (shouldAdd) {
-            print("should add");
-            items.add(
-                BillItem(
-                    name: itemName,
-                    price: priceNum,
-                    quantity: qtyNum,
-                    amount: priceNum * qtyNum,
-                    participantsId: {}
-                )
-            );
+            if (addedItems[itemName] != null) {
+              BillItem prevItem = items[addedItems[itemName]!];
+              bool shouldOverride = _shouldOverridePrevItem(prevItem.amount, priceNum * qtyNum, total);
+              if (shouldOverride) {
+                print("should override");
+                prevItem.price = priceNum;
+                prevItem.quantity = qtyNum;
+                prevItem.amount = priceNum * qtyNum;
+              }
+            } else {
+              print("should add");
+              items.add(
+                  BillItem(
+                      name: itemName,
+                      price: priceNum,
+                      quantity: qtyNum,
+                      amount: priceNum * qtyNum,
+                      participantsId: {}
+                  )
+              );
+              addedItems[itemName] = addedIdx++;
+            }
           }
         }
       }
     }
     return items;
+  }
+
+  bool _shouldOverridePrevItem(int prevAmount, int addedAmount, int total) {
+    return prevAmount > total && addedAmount <= total;
   }
 
   int _findTax(List<String> lines, int total) {
@@ -163,9 +188,24 @@ class BillRecognizer {
     return max;
   }
 
-  int _getQtyFromLine(String input) {
+  String _getPriceStringFromLine(String input, int? total) {
+    int max = 0;
+    String str = "";
+    priceRegex.allMatches(input).forEach((element) {
+      String matchStr = _getMatchString(element);
+      int num = stringToInt(matchStr);
+      if (num > max && _isPriceInRange(num, total)) {
+        max = num;
+        str = matchStr;
+      }
+    });
+    return str;
+  }
+
+  int _getQtyFromLine(String input, {String? priceText}) {
+    String normalized = priceText == null ? input : input.replaceFirst(priceText, "");
     int mn = 999;
-    qtyRegex.allMatches(input).forEach((element) {
+    qtyRegex.allMatches(normalized).forEach((element) {
       int match = stringToInt(_getMatchString(element));
       if (match > 0) {
         mn = min(mn, match);

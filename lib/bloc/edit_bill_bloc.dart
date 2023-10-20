@@ -56,7 +56,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   void updateBillSummary(UpdateBillSummaryEvent event, Emitter<EditBillState> emitter) {
     if (event.tax != null) state.bill.tax = stringToInt(event.tax);
     if (event.service != null) state.bill.service = stringToInt(event.service);
-    if (event.discounts != null) state.bill.discounts = stringToInt(event.discounts);
+    if (event.discounts != null) state.bill.discount = stringToInt(event.discounts);
     if (event.others != null) state.bill.others = stringToInt(event.others);
     if (event.total != null) {
       state.bill.total = stringToInt(event.total);

@@ -41,15 +41,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   void onRecognizeImage(RecognizeBillEvent event, Emitter<HomeState> emitter) async {
-    XFile? image = await event.imagePicker.pickImage(source: ImageSource.gallery);
+    XFile? image = await event.imagePicker.pickImage(source: (event.isFromCamera) ? ImageSource.camera : ImageSource.gallery);
     if (image != null) {
+      emitter(HomeState(bills: state.bills, isLoading: true));
       RecognizedText recognizedText = await event.textRecognizer.processImage(
           InputImage.fromFilePath(image.path));
       Bill result = BillRecognizer(recognizedText).recognize();
       event.textRecognizer.close();
       emitter(HomeState(bills: state.bills, scannedBill: result));
-    } else {
-      emitter(HomeState(bills: state.bills, snackbarMessage: StringRes.scanBillErrorMsg));
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:billbuddy/bloc/split_summary_bloc.dart';
 import 'package:billbuddy/model/split_report.dart';
 import 'package:billbuddy/repository/bill_repository.dart';
+import 'package:billbuddy/utils/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -70,8 +71,11 @@ class SplitSummaryScreen extends StatelessWidget {
                   ),
                 ),
                 if (state.isLoading) Container(
+                    height: double.infinity,
+                    width: double.infinity,
                     alignment: Alignment.center,
-                    child: CircularProgressIndicator()
+                    child: CircularProgressIndicator(),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(Constants.loadingOpacity))
                 )
               ],
             ),
@@ -203,7 +207,7 @@ class SplitSummaryScreen extends StatelessWidget {
         children: [
           renderParticipantSummaryItem(context, StringRes.tax, formatThousandsDouble(report.tax)),
           renderParticipantSummaryItem(context, StringRes.serviceCharge, formatThousandsDouble(report.service)),
-          renderParticipantSummaryItem(context, StringRes.discounts, formatThousandsDouble(report.discounts, addNegativePrefix: true)),
+          renderParticipantSummaryItem(context, StringRes.discount, formatThousandsDouble(report.discounts, addNegativePrefix: true)),
           renderParticipantSummaryItem(context, StringRes.others, formatThousandsDouble(report.others)),
           if (showDivider) renderDivider(16, 0)
         ],

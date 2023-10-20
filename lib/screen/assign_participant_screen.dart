@@ -274,7 +274,7 @@ class AssignParticipantScreen extends StatelessWidget {
     items.add(renderBillSummaryItem(context, state, StringRes.subtotal, formatThousands(state.bill.getSubtotal().toString())));
     items.add(renderBillSummaryItem(context, state, StringRes.tax, formatThousands(state.bill.tax.toString())));
     items.add(renderBillSummaryItem(context, state, StringRes.serviceCharge, formatThousands(state.bill.service.toString())));
-    items.add(renderBillSummaryItem(context, state, StringRes.discounts, formatThousands(state.bill.discounts.toString(), addNegativePrefix: true)));
+    items.add(renderBillSummaryItem(context, state, StringRes.discount, formatThousands(state.bill.discount.toString(), addNegativePrefix: true)));
     items.add(renderBillSummaryItem(context, state, StringRes.others, formatThousands(state.bill.others.toString())));
     items.add(renderBillSummaryItem(context, state, StringRes.totalAmount, formatThousands(state.bill.total.toString())));
     return Container(

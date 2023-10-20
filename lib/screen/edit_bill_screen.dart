@@ -225,7 +225,7 @@ class EditBillScreen extends StatelessWidget {
     items.add(renderBillSummaryItem(context, state, StringRes.serviceCharge, state.bill.service.toString(), onTextChange: (value) {
       context.read<EditBillBloc>().add(UpdateBillSummaryEvent(service: value));
     }));
-    items.add(renderBillSummaryItem(context, state, StringRes.discounts, state.bill.discounts.toString(), onTextChange: (value) {
+    items.add(renderBillSummaryItem(context, state, StringRes.discount, state.bill.discount.toString(), onTextChange: (value) {
       context.read<EditBillBloc>().add(UpdateBillSummaryEvent(discounts: value));
     }));
     String? othersErrorMsg = (state.editBillError?.othersError ?? false) ? StringRes.othersErrorMsg : null;
@@ -341,8 +341,17 @@ class EditBillScreen extends StatelessWidget {
                     Navigator.pop(context);
                     bloc.add(DeleteBillItemEvent(itemPosition));
                   },
-                  child: Padding(padding: EdgeInsets.only(top: 16, bottom: 16, right: 16, left: 16),
-                      child: Text(StringRes.deleteItem, style: textTheme(context).titleSmall)
+                  child: Container(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Expanded(flex: 1, child: Icon(Icons.delete, color: colorScheme(context).outline)),
+                          Expanded(flex: 9, child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(StringRes.delete, style: textTheme(context).titleSmall),
+                          )),
+                        ],
+                      )
                   ),
                 )
               ]

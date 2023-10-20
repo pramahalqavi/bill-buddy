@@ -20,7 +20,7 @@ class StringRes {
   static const String subtotal = "Subtotal";
   static const String tax = "Tax";
   static const String serviceCharge = "Service charge";
-  static const String discounts = "Discounts";
+  static const String discount = "Discount";
   static const String others = "Others";
   static const String totalAmount = "Total amount";
   static const String next = "Next";
@@ -33,7 +33,7 @@ class StringRes {
   static const String itemQtyErrorMsg = "Item quantity should be greater than zero";
 
   static const String editParticipant = "Edit Participant";
-  static const String deleteItem = "Delete item";
+  static const String delete = "Delete";
   static const String add = "Add";
   static const String participant = "Participant";
   static const String addParticipant = "Add Bill Participant";
@@ -54,13 +54,13 @@ class StringRes {
     return "$itemCount $itemText • $participantCount $participantText";
   }
   static const String seeDetail = "See Detail";
-  static const String deleteBill = "Delete bill";
   static const String deleteBillSuccessMsg = "Delete bill successful";
   static const String deleteBillErrorMsg = "Delete bill unsuccessful";
-  static const String scanBillErrorMsg = "There was an error while trying to scan the image";
-  static const String editBill = "Edit bill";
+  static const String edit = "Edit";
 
   static const String participantNotAssignedErrorMsg = "All participants must be assigned to at least one item";
   static const String billItemNotAssignedErrorMsg = "All items must be assigned to at least one participant";
+  static const String addManually = "Add manually";
   static const String addFromImage = "Add from image";
+  static const String addFromCamera = "Add from camera";
 }

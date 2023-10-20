@@ -11,6 +11,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import '../base/design_template.dart';
+import '../utils/constants.dart';
 import '../utils/string_res.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -57,7 +58,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: colorScheme(context).primary,
       foregroundColor: colorScheme(context).onPrimary,
       overlayColor: Colors.black,
-      overlayOpacity: 0.6,
+      overlayOpacity: Constants.loadingOpacity,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -70,7 +71,7 @@ class HomeScreen extends StatelessWidget {
             ),
             label: null,
             labelWidget: Container(margin: EdgeInsets.only(right: 12),
-                child: Text(StringRes.add, style: textThemePrimary(context).bodyLarge)),
+                child: Text(StringRes.addManually, style: textThemePrimary(context).bodyLarge)),
             labelStyle: textTheme(context).bodyMedium,
             onTap: () {
               if (!state.isLoading) {
@@ -90,6 +91,19 @@ class HomeScreen extends StatelessWidget {
             onTap: () async {
               context.read<HomeBloc>().add(RecognizeBillEvent(getIt.get<ImagePicker>(), getIt.get<TextRecognizer>()));
             }),
+        SpeedDialChild( //// speed dial child
+            child: Icon(Icons.camera_alt, color: colorScheme(context).onPrimary),
+            backgroundColor: colorScheme(context).primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            label: null,
+            labelWidget: Container(margin: EdgeInsets.only(right: 12),
+                child: Text(StringRes.addFromCamera, style: textThemePrimary(context).bodyLarge)),
+            labelStyle: textTheme(context).bodyMedium,
+            onTap: () async {
+              context.read<HomeBloc>().add(RecognizeBillEvent(getIt.get<ImagePicker>(), getIt.get<TextRecognizer>(), isFromCamera: true));
+            }),
       ],
     );
   }
@@ -97,15 +111,25 @@ class HomeScreen extends StatelessWidget {
   Widget homeContainer(BuildContext context, HomeState state) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(left: 16, right: 16),
-      child: state.isLoading ? Center(child: CircularProgressIndicator()) :
-        state.isErrorInit ? Center(child: Text(StringRes.errorOccurred)) :
-        (state.bills.isNotEmpty) ?
-        ListView(
-          padding: EdgeInsets.only(top: 16, bottom: 16),
-          addAutomaticKeepAlives: false,
-          children: bills(context, state),
-        ) : Center(child: Text(StringRes.noData))
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          ((state.isErrorInit) ? Center(child: Text(StringRes.errorOccurred)) :
+          (state.bills.isEmpty && !state.isLoading) ? Center(child: Text(StringRes.noData)) :
+          ListView(
+            padding: EdgeInsets.only(top: 16, bottom: 16),
+            addAutomaticKeepAlives: false,
+            children: bills(context, state),
+          )),
+          if (state.isLoading) Container(
+              height: double.infinity,
+              width: double.infinity,
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(),
+              decoration: BoxDecoration(color: Colors.black.withOpacity(Constants.loadingOpacity))
+          )
+        ],
+      )
     );
   }
 
@@ -120,7 +144,7 @@ class HomeScreen extends StatelessWidget {
   Widget bill(BuildContext context, HomeState state, int index) {
     var bill = state.bills[index];
     return Container(
-      margin: EdgeInsets.only(top: 8, bottom: 8),
+      margin: EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
       padding: EdgeInsets.only(top: 16, bottom: 16, left: 16, right: 16),
       decoration: BoxDecoration(
           border: Border.all(
@@ -143,7 +167,7 @@ class HomeScreen extends StatelessWidget {
                   child: IconButton(
                       onPressed: () {
                         showBillOptionBottomSheet(context, context.read<HomeBloc>(), index);
-                      }, icon: Icon(Icons.more_horiz)),
+                      }, icon: Icon(Icons.more_vert)),
                 )
               ],
             )),
@@ -213,8 +237,15 @@ class HomeScreen extends StatelessWidget {
                     },
                     child: Container(
                         padding: EdgeInsets.all(16),
-                        child: Text(StringRes.editBill,
-                            style: textTheme(context).titleSmall)),
+                        child: Row(
+                          children: [
+                            Expanded(flex: 1, child: Icon(Icons.edit, color: colorScheme(context).outline)),
+                            Expanded(flex: 9, child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(StringRes.edit, style: textTheme(context).titleSmall),
+                            )),
+                          ],
+                        )),
                   ),
                   InkWell(
                     onTap: () {
@@ -223,8 +254,15 @@ class HomeScreen extends StatelessWidget {
                     },
                     child: Container(
                         padding: EdgeInsets.all(16),
-                        child: Text(StringRes.deleteBill,
-                            style: textTheme(context).titleSmall)),
+                        child: Row(
+                          children: [
+                            Expanded(flex: 1, child: Icon(Icons.delete, color: colorScheme(context).outline)),
+                            Expanded(flex: 9, child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(StringRes.delete, style: textTheme(context).titleSmall),
+                            )),
+                          ],
+                        )),
                   )
                 ],
               ),

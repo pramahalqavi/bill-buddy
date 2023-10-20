@@ -10,13 +10,13 @@ class Bill {
   List<String> participants;
   int tax;
   int service;
-  int discounts;
+  int discount;
   int others;
   int total;
 
   Bill({this.id, this.title = "", required this.billDate, this.items = const [],
     this.participants = const [""], this.tax = 0, this.service = 0,
-    this.discounts = 0, this.others = 0, this.total = 0});
+    this.discount = 0, this.others = 0, this.total = 0});
 
   int getSubtotal() {
     int subtotal = 0;
@@ -25,11 +25,11 @@ class Bill {
   }
 
   void updateOthers() {
-    others = total - getSubtotal() - tax - service + discounts;
+    others = total - getSubtotal() - tax - service + discount;
   }
 
   void updateTotal() {
-    total = getSubtotal() + tax + service - discounts + others;
+    total = getSubtotal() + tax + service - discount + others;
   }
 
   List<BillItem> _getParticipantItems(int id) {
@@ -53,7 +53,7 @@ class Bill {
     double participantTax = tax * portion;
     double participantService = service * portion;
     double participantOthers = others * portion;
-    double participantDiscounts = discounts * portion;
+    double participantDiscounts = discount * portion;
     double participantTotal = participantSubtotal + participantTax +
         participantService + participantOthers - participantDiscounts;
     return SplitReport(
