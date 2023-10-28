@@ -50,7 +50,6 @@ class BillScanHelper {
       List<num> bottomLine = _getLineMesh(points, avgHeight, false);
 
       mergedLines[i].setBox([[topLine[0], topLine[2]-threshold], [topLine[1], topLine[3]-threshold], [bottomLine[1], bottomLine[3]+threshold], [bottomLine[0], bottomLine[2]+threshold]]);//top left corner, then clockwise
-      // mergedLines[i].setBox([[topLine[0], topLine[2]], [topLine[1], topLine[3]], [bottomLine[1], bottomLine[3]], [bottomLine[0], bottomLine[2]]]);//top left corner, then clockwise
 
       mergedLines[i].setlineNum(i);
 

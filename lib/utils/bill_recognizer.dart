@@ -29,14 +29,14 @@ class BillRecognizer {
 
   BillRecognizer(this.recognizedText) {
     lines = BillScanHelper(recognizedText).constructLines();
-    for (String line in lines) {
-      print(line);
-    }
+    // for (String line in lines) {
+    //   print(line);
+    // }
   }
 
   Bill recognize() {
     String title = _findTitle(recognizedText);
-    int total = _findSummaryValue(totalRegex, null);
+    int total = _findTotalValue();
     int tax = _findTax(lines, total);
     int service = _findSummaryValue(serviceRegex, total);
     int discount = _findSummaryValue(discountRegex, total);
@@ -53,7 +53,8 @@ class BillRecognizer {
       discount: discount,
       others: others,
       total: total,
-      items: items
+      items: items,
+      participants: [""]
     );
   }
 
@@ -83,7 +84,7 @@ class BillRecognizer {
         if (qtyNum == 0 && i < lines.length - 1) {
           qtyNum = _getQtyFromLine(lines[i + 1], priceText: priceText);
         }
-        print("Items itemName $itemName priceNum $priceNum qtyNum $qtyNum");
+        // print("Items itemName $itemName priceNum $priceNum qtyNum $qtyNum");
         if (qtyNum == 0 || priceNum * qtyNum > total) {
           qtyNum = 1;
         } else if (priceNum % qtyNum == 0) {
@@ -105,13 +106,11 @@ class BillRecognizer {
               BillItem prevItem = items[addedItems[itemName]!];
               bool shouldOverride = _shouldOverridePrevItem(prevItem.amount, priceNum * qtyNum, total);
               if (shouldOverride) {
-                print("should override");
                 prevItem.price = priceNum;
                 prevItem.quantity = qtyNum;
                 prevItem.amount = priceNum * qtyNum;
               }
             } else {
-              print("should add");
               items.add(
                   BillItem(
                       name: itemName,
@@ -149,7 +148,7 @@ class BillRecognizer {
     return 0;
   }
 
-  int _findSummaryValue(RegExp labelRegex, int? total) {
+  int _findSummaryValue(RegExp labelRegex, int? total, {bool removeLine = true}) {
     for (var i = lines.length - 1; i >= 0; --i) {
       int removeIdx = -1;
       if (labelRegex.hasMatch(lines[i])) {
@@ -163,7 +162,7 @@ class BillRecognizer {
           if (!_isPriceInRange(match, total)) continue;
           removeIdx = i + 1;
         }
-        if (removeIdx != -1) {
+        if (removeIdx != -1 && removeLine) {
           lines.removeAt(removeIdx);
         }
         return match;
@@ -172,15 +171,35 @@ class BillRecognizer {
     return 0;
   }
 
+  int _findTotalValue() {
+    int total = _findSummaryValue(totalRegex, null, removeLine: false);
+    int max = 0;
+    for (var i = lines.length - 1; i >= lines.length / 2; --i) {
+      if (priceRegex.hasMatch(lines[i])) {
+        int match = _getPriceFromLine(lines[i], null);
+        if (match > max) max = match;
+      }
+    }
+    if (total >= max) {
+      max = total;
+      _findSummaryValue(totalRegex, null);
+    }
+    return max;
+  }
+
   bool _isPriceInRange(int input, int? total) {
-    if (total == null) return true;
+    if (total == null || total == 0) return true;
     return input > priceBottomThreshold * total && input < priceTopThreshold * total;
   }
 
   int _getPriceFromLine(String input, int? total) {
     int max = 0;
     priceRegex.allMatches(input).forEach((element) {
-      int num = stringToInt(_getMatchString(element));
+      String cleaned = _getMatchString(element);
+      if (cleaned.endsWith(".00") || cleaned.endsWith(",00")) {
+        cleaned = cleaned.replaceRange(cleaned.length - 3, null, "");
+      }
+      int num = stringToInt(cleaned);
       if (num > max && _isPriceInRange(num, total)) {
         max = num;
       }

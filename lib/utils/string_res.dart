@@ -27,7 +27,7 @@ class StringRes {
   static const String bill = "Bill";
   static const String item = "Item";
   static const String invalidInput = "Invalid input";
-  static const String othersErrorMsg = "This field should not have negative value";
+  static const String othersErrorMsg = "This field should not have a negative value";
   static const String totalErrorMsg = "This field should be greater than zero";
   static const String itemsLengthErrorMsg = "Please add item first";
   static const String itemQtyErrorMsg = "Item quantity should be greater than zero";
@@ -54,8 +54,8 @@ class StringRes {
     return "$itemCount $itemText • $participantCount $participantText";
   }
   static const String seeDetail = "See Detail";
-  static const String deleteBillSuccessMsg = "Delete bill successful";
-  static const String deleteBillErrorMsg = "Delete bill unsuccessful";
+  static const String deleteBillSuccessMsg = "Delete successful";
+  static const String deleteBillErrorMsg = "Delete failed";
   static const String edit = "Edit";
 
   static const String participantNotAssignedErrorMsg = "All participants must be assigned to at least one item";
