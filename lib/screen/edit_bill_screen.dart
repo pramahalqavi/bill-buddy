@@ -1,8 +1,10 @@
 import 'package:billbuddy/base/app_theme.dart';
 import 'package:billbuddy/base/design_template.dart';
-import 'package:billbuddy/bloc/add_bill_bloc.dart';
+import 'package:billbuddy/bloc/edit_bill_bloc.dart';
 import 'package:billbuddy/model/bill.dart';
 import 'package:billbuddy/model/bill_item.dart';
+import 'package:billbuddy/screen/edit_participant_screen.dart';
+import 'package:billbuddy/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,17 +13,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../utils/string_res.dart';
 
 class EditBillScreen extends StatelessWidget {
-  const EditBillScreen({super.key});
+  final Bill? initialBill;
 
-  static Route route() => MaterialPageRoute(builder: (context) => EditBillScreen());
+  const EditBillScreen({this.initialBill = null, super.key});
+
+  static Route route(Bill? bill) => MaterialPageRoute(builder: (context) => EditBillScreen(initialBill: bill));
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AddBillBloc>(
-      create: (context) => AddBillBloc(
-          AddBillState(Bill(billDate: DateTime.now(), items: [BillItem(name: "test")]))
+    return BlocProvider<EditBillBloc>(
+      create: (context) => EditBillBloc(
+          EditBillState(initialBill == null ? Bill(billDate: DateTime.now(), items: [], participants: [""]) : initialBill!)
       ),
-      child: BlocBuilder<AddBillBloc, AddBillState>(
+      child: BlocBuilder<EditBillBloc, EditBillState>(
         builder: (context, state) => Scaffold(
           appBar: AppBar(
             iconTheme: IconThemeData(color: colorScheme(context).onPrimary),
@@ -34,31 +38,46 @@ class EditBillScreen extends StatelessWidget {
     );
   }
 
-  Widget billContainer(BuildContext context, AddBillState state) {
+  Widget billContainer(BuildContext context, EditBillState state) {
     return Container(
       padding: EdgeInsets.only(left: 16, right: 16),
         child: ListView(
-            padding: EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: 24),
             addAutomaticKeepAlives: false,
-            children: constructBill(context, state)));
+            children: renderBill(context, state)));
   }
 
-  List<Widget> constructBill(BuildContext context, AddBillState state) {
+  List<Widget> renderBill(BuildContext context, EditBillState state) {
     List<Widget> items = [];
-    items.addAll(constructBillHeader(context, state));
-    items.addAll(constructBillItems(context, state));
-    items.addAll(constructBillSummary(context, state));
+    items.addAll(renderBillHeader(context, state));
+    items.addAll(renderBillItems(context, state));
+    items.addAll(renderBillSummary(context, state));
+    items.add(renderSubmitButton(context, state));
     return items;
   }
 
-  List<Widget> constructBillHeader(BuildContext context, AddBillState state) {
+  List<Widget> renderBillHeader(BuildContext context, EditBillState state) {
     List<Widget> items = [];
     items.add(Padding(padding: EdgeInsets.only(top: 16), child: Text(StringRes.billItems, style: textTheme(context).headlineSmall)));
     items.add(Padding(padding: EdgeInsets.only(top: 4), child: Text(StringRes.billItemsInstruction, style: textTheme(context).bodyMedium)));
     items.add(Padding(
         padding: EdgeInsets.only(top: 24),
-        child: TextField(
+        child: TextFormField(
+          onChanged: (value) {
+            context.read<EditBillBloc>().add(UpdateBillHeaderEvent(title: value));
+          },
+          maxLength: 128,
+          textCapitalization: TextCapitalization.sentences,
+          controller: textEditingControllerWithValue(state.bill.title),
           decoration: inputDecoration(context, padding: 16, label: Text(StringRes.title)),
+        )));
+    items.add(Padding(
+        padding: EdgeInsets.only(top: 16),
+        child: TextFormField(
+          onTap: () { onTapDatePicker(context, state, context.read<EditBillBloc>()); },
+          readOnly: true,
+          controller: textEditingControllerWithValue(dateToString(state.bill.billDate)),
+          decoration: inputDecoration(context, padding: 16, label: Text(StringRes.billDate)),
         )));
     items.add(Padding(
       padding: EdgeInsets.only(top: 8),
@@ -67,23 +86,54 @@ class EditBillScreen extends StatelessWidget {
     return items;
   }
 
-  List<Widget> constructBillItems(BuildContext context, AddBillState state) {
-    List<Widget> items = [];
-    for (BillItem item in state.bill.items) {
-      items.add(constructBillItem(context, item));
+  void onTapDatePicker(BuildContext context, EditBillState state, EditBillBloc bloc) async {
+    DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: state.bill.billDate,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101)
+    );
+    if (pickedDate != null) {
+      bloc.add(UpdateBillHeaderEvent(date: dateToString(pickedDate)));
     }
-    items.add(constructAddBillItem(context, state));
+  }
+
+  List<Widget> renderBillItems(BuildContext context, EditBillState state) {
+    List<Widget> items = [];
+    for (int i = 0; i < state.bill.items.length; ++i) {
+      items.add(renderBillItem(context, state.bill.items[i], i));
+    }
+    items.add(renderAddBillItem(context, state));
     return items;
   }
   
-  Widget constructBillItem(BuildContext context, BillItem item) {
+  Widget renderBillItem(BuildContext context, BillItem item, int position) {
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 12),
-          child: TextField(
-              controller: textEditingControllerWithValue(item.name),
-              decoration: inputDecoration(context, padding: 12, label: Text(StringRes.itemName))
+          child: Row(
+            children: [
+              Expanded(
+                flex: 9,
+                child: TextField(
+                    onChanged: (value) {
+                      context.read<EditBillBloc>().add(UpdateBillItemEvent(position: position, name: value));
+                    },
+                    maxLength: 128,
+                    textCapitalization: TextCapitalization.sentences,
+                    controller: textEditingControllerWithValue(item.name),
+                    decoration: inputDecoration(context, padding: 12, label: Text(StringRes.itemName))
+                ),
+              ),
+              Expanded(
+                  flex: 1,
+                  child: IconButton(
+                      onPressed: () {
+                        var bloc = context.read<EditBillBloc>();
+                        showBillItemOptionBottomSheet(context, position, bloc);
+                      }, icon: Icon(Icons.more_horiz)))
+            ],
           ),
         ),
         Padding(
@@ -91,34 +141,41 @@ class EditBillScreen extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                flex: 6,
+                flex: 75,
                 child: TextFormField(
-                    controller: textEditingControllerWithValue(item.price.toString()),
+                    onChanged: (value) {
+                      context.read<EditBillBloc>().add(UpdateBillItemEvent(position: position, price: value));
+                    },
+                    maxLength: 13,
+                    controller: textEditingControllerWithValue(item.price.toString(), shouldFormatNumber: true),
                     keyboardType: TextInputType.number,
                     inputFormatters: numberInputFormatters(),
                     decoration: inputDecoration(context, padding: 12, label: Text(StringRes.price))
                 ),
               ),
-              Expanded(flex: 3, child: SizedBox()),
+              Expanded(flex: 5, child: SizedBox()),
               Expanded(
-                flex: 4,
+                flex: 40,
                 child: TextFormField(
-                    controller: textEditingControllerWithValue(item.quantity.toString()),
+                    onChanged: (value) {
+                      context.read<EditBillBloc>().add(UpdateBillItemEvent(position: position, qty: value));
+                    },
+                    maxLength: 3,
+                    textAlign: TextAlign.right,
+                    controller: textEditingControllerWithValue(item.quantity.toString(), shouldFormatNumber: true),
                     keyboardType: TextInputType.number,
                     inputFormatters: numberInputFormatters(),
-                    decoration: inputDecoration(context, padding: 12, label: Text(StringRes.qty), suffix: Text("X"))
+                    decoration: inputDecoration(context, padding: 12, label: Text(StringRes.qty), prefix: Text("X"))
                 ),
               ),
-              Expanded(flex: 1, child: SizedBox()),
+              Expanded(flex: 10, child: SizedBox(
+                  child: Text("=", textAlign: TextAlign.end, style: textTheme(context).titleMedium)
+              )),
               Expanded(
-                flex: 6,
-                child: TextFormField(
-                    controller: textEditingControllerWithValue(item.getTotal().toString()),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: numberInputFormatters(),
-                    decoration: inputDecoration(context, padding: 12, label: Text(StringRes.amount))
-                ),
-              )
+                  flex: 75,
+                  child: Text(formatThousands(item.amount.toString()),
+                      textAlign: TextAlign.end,
+                      style: textTheme(context).titleMedium)),
             ],
           ),
         ),
@@ -130,7 +187,7 @@ class EditBillScreen extends StatelessWidget {
     );
   }
   
-  Widget constructAddBillItem(BuildContext context, AddBillState state) {
+  Widget renderAddBillItem(BuildContext context, EditBillState state) {
     return Column(
       children: [
         Padding(
@@ -145,7 +202,7 @@ class EditBillScreen extends StatelessWidget {
                 icon: Icon(Icons.add_circle_outline),
                 label: Text(StringRes.addItem),
                 onPressed: () {
-
+                  context.read<EditBillBloc>().add(AddBillItemEvent());
                 },
               ),
             )
@@ -158,19 +215,31 @@ class EditBillScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> constructBillSummary(BuildContext context, AddBillState state) {
+  List<Widget> renderBillSummary(BuildContext context, EditBillState state) {
     List<Widget> items = [];
-    items.add(constructBillSummaryHeader(context, state));
-    items.add(constructBillSummaryItem(context, state, StringRes.subtotal, state.bill.getSubtotal().toString(), false));
-    items.add(constructBillSummaryItem(context, state, StringRes.tax, state.bill.tax.toString(), true));
-    items.add(constructBillSummaryItem(context, state, StringRes.serviceCharge, state.bill.service.toString(), true));
-    items.add(constructBillSummaryItem(context, state, StringRes.discounts, state.bill.discounts.toString(), true));
-    items.add(constructBillSummaryItem(context, state, StringRes.others, state.bill.others.toString(), false));
-    items.add(constructBillSummaryItem(context, state, StringRes.totalAmount, state.bill.getTotal().toString(), true));
+    items.add(renderBillSummaryHeader(context, state));
+    items.add(renderBillSummaryItem(context, state, StringRes.subtotal, state.bill.getSubtotal().toString()));
+    items.add(renderBillSummaryItem(context, state, StringRes.tax, state.bill.tax.toString(), onTextChange: (value) {
+      context.read<EditBillBloc>().add(UpdateBillSummaryEvent(tax: value));
+    }));
+    items.add(renderBillSummaryItem(context, state, StringRes.serviceCharge, state.bill.service.toString(), onTextChange: (value) {
+      context.read<EditBillBloc>().add(UpdateBillSummaryEvent(service: value));
+    }));
+    items.add(renderBillSummaryItem(context, state, StringRes.discount, state.bill.discount.toString(), onTextChange: (value) {
+      context.read<EditBillBloc>().add(UpdateBillSummaryEvent(discounts: value));
+    }));
+    String? othersErrorMsg = (state.editBillError?.othersError ?? false) ? StringRes.othersErrorMsg : null;
+    items.add(renderBillSummaryItem(context, state, StringRes.others, state.bill.others.toString(), errorMessage: othersErrorMsg, onTextChange: (value) {
+      context.read<EditBillBloc>().add(UpdateBillSummaryEvent(others: value));
+    }));
+    String? totalErrorMsg = (state.editBillError?.totalError ?? false) ? StringRes.totalErrorMsg : null;
+    items.add(renderBillSummaryItem(context, state, StringRes.totalAmount, state.bill.total.toString(), errorMessage: totalErrorMsg, onTextChange: (value) {
+      context.read<EditBillBloc>().add(UpdateBillSummaryEvent(total: value));
+    }));
     return items;
   }
 
-  Widget constructBillSummaryHeader(BuildContext context, AddBillState state) {
+  Widget renderBillSummaryHeader(BuildContext context, EditBillState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -186,28 +255,109 @@ class EditBillScreen extends StatelessWidget {
     );
   }
 
-  Widget constructBillSummaryItem(BuildContext context, AddBillState state, String itemName, String itemValue, bool isTextForm) {
+  Widget renderBillSummaryItem(BuildContext context, EditBillState state, String itemName, String itemValue, {void Function(String value)? onTextChange, String? errorMessage}) {
     Widget rightWidget;
+    bool isTextForm = onTextChange != null;
     if (isTextForm) {
       rightWidget = TextFormField(
+          onChanged: onTextChange,
+          maxLength: 13,
           textAlign: TextAlign.right,
-          controller: textEditingControllerWithValue(itemValue),
+          controller: textEditingControllerWithValue(itemValue, shouldFormatNumber: true),
           keyboardType: TextInputType.number,
           inputFormatters: numberInputFormatters(),
-          decoration: inputDecoration(context, padding: 6)
+          decoration: inputDecoration(context, padding: 6, isError: errorMessage != null)
       );
     } else {
-      rightWidget = Text(itemValue, textAlign: TextAlign.right, style: textTheme(context).labelLarge);
+      rightWidget = Text(formatThousands(itemValue), textAlign: TextAlign.right, style: textTheme(context).titleMedium);
+    }
+    double rightPadding = isTextForm ? 0 : 8;
+    var contentRow = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: Text(itemName, style: textTheme(context).titleSmall), flex: 1),
+        Expanded(child: rightWidget, flex: 1)
+      ],
+    );
+    var columnChildren = [contentRow];
+    if (errorMessage != null) {
+      columnChildren.add(Row(
+        children: [
+          Expanded(flex: 1, child: SizedBox()),
+          Expanded(
+              flex: 1,
+              child: Text(errorMessage, textAlign: TextAlign.start, style: errorTextStyle(context)))
+        ],
+      ));
     }
     return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(child: Text(itemName, style: textTheme(context).labelLarge), flex: 1),
-          Expanded(child: rightWidget, flex: 1)
-        ],
+      padding: EdgeInsets.only(top: 8, bottom: 8, right: rightPadding),
+      child: Column(
+        children: columnChildren,
       ),
+    );
+  }
+
+  Widget renderSubmitButton(BuildContext context, EditBillState state) {
+    var errorMsg = (state.editBillError?.itemsLengthError == true) ?
+    StringRes.itemsLengthErrorMsg : (state.editBillError?.itemQuantityError == true) ? StringRes.itemQtyErrorMsg : "";
+    var error = Container(
+        margin: EdgeInsets.only(bottom: 4),
+        child: Text(errorMsg, textAlign: TextAlign.center, style: errorTextStyle(context))
+    );
+    var button = primaryTextButton(context, onPressed: () {
+      EditBillBloc bloc = context.read<EditBillBloc>();
+      if (bloc.isBillValid()) {
+        bloc.setDefaultBillValue();
+        Navigator.push(context, EditParticipantScreen.route(state.bill));
+      } else {
+        bloc.add(EditBillProceedErrorEvent());
+      }
+    }, text: StringRes.next);
+    List<Widget> columnChildren = [
+      if (errorMsg.isNotEmpty) error,
+      button
+    ];
+    return Padding(
+      padding: EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: columnChildren,
+      ),
+    );
+  }
+
+  void showBillItemOptionBottomSheet(BuildContext context, int itemPosition, EditBillBloc bloc) {
+    showModalBottomSheet(context: context,
+        builder: (context) => Container(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 16, bottom: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    bloc.add(DeleteBillItemEvent(itemPosition));
+                  },
+                  child: Container(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Expanded(flex: 1, child: Icon(Icons.delete, color: colorScheme(context).outline)),
+                          Expanded(flex: 9, child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(StringRes.delete, style: textTheme(context).titleSmall),
+                          )),
+                        ],
+                      )
+                  ),
+                )
+              ]
+            ),
+          ),
+        )
     );
   }
 }
