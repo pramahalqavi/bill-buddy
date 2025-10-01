@@ -1,6 +1,5 @@
 import 'package:billbuddy/bloc/edit_participant_bloc.dart';
 import 'package:billbuddy/screen/assign_participant_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

@@ -2,7 +2,6 @@ import 'package:billbuddy/bloc/split_summary_bloc.dart';
 import 'package:billbuddy/model/split_report.dart';
 import 'package:billbuddy/repository/bill_repository.dart';
 import 'package:billbuddy/utils/constants.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screenshot/screenshot.dart';
@@ -74,8 +73,8 @@ class SplitSummaryScreen extends StatelessWidget {
                     height: double.infinity,
                     width: double.infinity,
                     alignment: Alignment.center,
-                    child: CircularProgressIndicator(),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(Constants.loadingOpacity))
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(Constants.loadingOpacity)),
+                    child: CircularProgressIndicator()
                 )
               ],
             ),

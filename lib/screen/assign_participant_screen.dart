@@ -143,10 +143,6 @@ class AssignParticipantScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    child: Text(
-                      "${i + 1}",
-                      style: txtThemeContainer.headlineMedium,
-                    ),
                     decoration: BoxDecoration(
                         color: fillColor,
                         border: Border.all(
@@ -155,6 +151,10 @@ class AssignParticipantScreen extends StatelessWidget {
                         borderRadius: BorderRadius.all(Radius.circular(100))
                     ),
                     padding: EdgeInsets.only(top: 16, bottom: 16, left: 26, right: 26),
+                    child: Text(
+                      "${i + 1}",
+                      style: txtThemeContainer.headlineMedium,
+                    ),
                   ),
                   Container(
                       constraints: BoxConstraints(maxWidth: 90, maxHeight: 110),
@@ -254,10 +254,6 @@ class AssignParticipantScreen extends StatelessWidget {
     return billItem.participantsId.map((id) =>
         Container(
           margin: EdgeInsets.only(right: 2, left: 2),
-          child: Text(
-            "${id + 1}",
-            style: textTheme(context).bodyMedium,
-          ),
           decoration: BoxDecoration(
               border: Border.all(
                 color: colorScheme(context).outline,
@@ -265,6 +261,10 @@ class AssignParticipantScreen extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(100))
           ),
           padding: EdgeInsets.only(top: 10, bottom: 10, left: 16, right: 16),
+          child: Text(
+            "${id + 1}",
+            style: textTheme(context).bodyMedium,
+          ),
         )
     ).toList();
   }

@@ -4,7 +4,7 @@ import 'package:billbuddy/utils/bill_transformer.dart';
 import '../model/bill.dart';
 
 class BillRepository {
-  AppDatabase _database;
+  final AppDatabase _database;
 
   BillRepository(this._database);
 

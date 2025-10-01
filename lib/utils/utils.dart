@@ -2,11 +2,11 @@
 import 'package:intl/intl.dart';
 
 String digitOnly(String str) {
-  return str.replaceAll(RegExp("[^0-9\-]"), "");
+  return str.replaceAll(RegExp("[^0-9-]"), "");
 }
 
 String digitAndDotOnly(String str) {
-  return str.replaceAll(RegExp("[^0-9\-\.]"), "");
+  return str.replaceAll(RegExp("[^0-9-.]"), "");
 }
 
 int stringToInt(String? str) {

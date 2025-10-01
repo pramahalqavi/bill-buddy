@@ -18,7 +18,7 @@ class BillScanHelper {
           tempVertices.add([point.x, point.y]);
         }
         for(TextElement element in line.elements){
-          words = words + " " + element.text;
+          words = "$words ${element.text}";
         }
         mergedLines.add(WordBox(words, tempVertices));
       }
@@ -138,7 +138,7 @@ class BillScanHelper {
     List<String> finalLines = [];
     for (int i = 0; i < mergedLines.length; i++) {
       if (mergedLines[i].matched == false) {
-        if (mergedLines[i].match.length == 0) {
+        if (mergedLines[i].match.isEmpty) {
           finalLines.add(mergedLines[i].text);
         } else {
           finalLines.add(_arrangeWordsInOrder(mergedLines, i));
@@ -158,9 +158,9 @@ class BillScanHelper {
       num mainX = mergedLines[i].vertices[0][0];
       num compareX = mergedLines[index].vertices[0][0];
       if(compareX > mainX){
-        mergedLine = mergedLines[i].text + ' ' + matchedWordForLine;
+        mergedLine = '${mergedLines[i].text} $matchedWordForLine';
       }else{
-        mergedLine = matchedWordForLine + ' ' + mergedLines[i].text;
+        mergedLine = '$matchedWordForLine ${mergedLines[i].text}';
       }
     }
     return mergedLine;
@@ -177,16 +177,16 @@ class WordBox {
 
   WordBox(this.text, this.vertices);
 
-  setBox(List<List<num>> boundingBox){
+  void setBox(List<List<num>> boundingBox){
     this.boundingBox = boundingBox;
   }
-  pushMatch(HashMap<String, int> match){
+  void pushMatch(HashMap<String, int> match){
     this.match.add(match);
   }
-  setlineNum(num lineNum){
+  void setlineNum(num lineNum){
     this.lineNum = lineNum;
   }
-  setMatched(bool matched){
+  void setMatched(bool matched){
     this.matched = matched;
   }
 }

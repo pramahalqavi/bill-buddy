@@ -1,4 +1,4 @@
-import 'package:billbuddy/base/app.dart';
+import 'package:billbuddy/main.dart';
 import 'package:billbuddy/base/app_theme.dart';
 import 'package:billbuddy/bloc/home_bloc.dart';
 import 'package:billbuddy/repository/bill_repository.dart';
@@ -109,7 +109,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget homeContainer(BuildContext context, HomeState state) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Stack(
         alignment: Alignment.topCenter,
@@ -125,8 +125,8 @@ class HomeScreen extends StatelessWidget {
               height: double.infinity,
               width: double.infinity,
               alignment: Alignment.center,
-              child: CircularProgressIndicator(),
-              decoration: BoxDecoration(color: Colors.black.withOpacity(Constants.loadingOpacity))
+              decoration: BoxDecoration(color: Colors.black.withOpacity(Constants.loadingOpacity)),
+              child: CircularProgressIndicator()
           )
         ],
       )
@@ -200,11 +200,11 @@ class HomeScreen extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(context, SplitSummaryScreen.route(bill, isViewOnly: true));
                           },
+                          style: primaryButtonStyle(context, verticalPadding: 6),
                           child: Text(
                             StringRes.seeDetail,
                             style: textThemePrimary(context).titleSmall,
                           ),
-                          style: primaryButtonStyle(context, verticalPadding: 6),
                         )
                     )
                   ],

@@ -2,6 +2,7 @@ import 'package:billbuddy/utils/utils.dart';
 import 'package:flutter/services.dart';
 
 class NumberInputFormatter extends TextInputFormatter {
+  @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     if (newValue.selection.baseOffset == 0) {
       return TextEditingValue(

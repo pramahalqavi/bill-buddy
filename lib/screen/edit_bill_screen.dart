@@ -5,9 +5,7 @@ import 'package:billbuddy/model/bill.dart';
 import 'package:billbuddy/model/bill_item.dart';
 import 'package:billbuddy/screen/edit_participant_screen.dart';
 import 'package:billbuddy/utils/utils.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../utils/string_res.dart';
@@ -15,7 +13,7 @@ import '../utils/string_res.dart';
 class EditBillScreen extends StatelessWidget {
   final Bill? initialBill;
 
-  const EditBillScreen({this.initialBill = null, super.key});
+  const EditBillScreen({this.initialBill, super.key});
 
   static Route route(Bill? bill) => MaterialPageRoute(builder: (context) => EditBillScreen(initialBill: bill));
 
@@ -196,7 +194,7 @@ class EditBillScreen extends StatelessWidget {
               width: double.infinity,
               child: TextButton.icon(
                 style: ButtonStyle(
-                  padding: MaterialStateProperty.all<EdgeInsets>(
+                  padding: WidgetStateProperty.all<EdgeInsets>(
                       EdgeInsets.all(16)),
                 ),
                 icon: Icon(Icons.add_circle_outline),
@@ -275,8 +273,8 @@ class EditBillScreen extends StatelessWidget {
     var contentRow = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(child: Text(itemName, style: textTheme(context).titleSmall), flex: 1),
-        Expanded(child: rightWidget, flex: 1)
+        Expanded(flex: 1, child: Text(itemName, style: textTheme(context).titleSmall)),
+        Expanded(flex: 1, child: rightWidget)
       ],
     );
     var columnChildren = [contentRow];

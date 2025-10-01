@@ -43,7 +43,9 @@ class BillRecognizer {
     _findSummaryValue(subtotalRegex, total);
     List<BillItem> items = _findItems(lines, total);
     int subtotal = 0;
-    items.forEach((element) => subtotal += element.quantity * element.price);
+    for (var element in items) {
+      subtotal += element.quantity * element.price;
+    }
     int others = total - (tax + service - discount + subtotal);
     return Bill(
       title: title,
@@ -139,9 +141,14 @@ class BillRecognizer {
         int tax = _getPriceFromLine(lines[i], total);
         if (tax == 0 && i < lines.length - 1) {
           tax = max(tax, _getPriceFromLine(lines[i + 1], total));
-          if (tax > 0) lines.removeAt(i + 1);
-          else lines.removeAt(i);
-        } else lines.removeAt(i);
+          if (tax > 0) {
+            lines.removeAt(i + 1);
+          } else {
+            lines.removeAt(i);
+          }
+        } else {
+          lines.removeAt(i);
+        }
         return tax;
       }
     }

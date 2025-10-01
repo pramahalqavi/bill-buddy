@@ -40,11 +40,11 @@ TextButton primaryTextButton(BuildContext context,
     {required void Function() onPressed, required String text}) {
   return TextButton(
       onPressed: onPressed,
+      style: primaryButtonStyle(context),
       child: Text(
         text,
         style: textThemePrimary(context).titleSmall,
-      ),
-      style: primaryButtonStyle(context));
+      ));
 }
 
 ButtonStyle primaryButtonStyle(BuildContext context, {double verticalPadding = 12}) {
